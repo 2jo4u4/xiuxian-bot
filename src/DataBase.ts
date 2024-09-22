@@ -1,4 +1,4 @@
-import { join } from "https://deno.land/std@0.114.0/path/mod.ts";
+import { join } from "./deps.ts";
 
 export interface DataBaseType {
   role: Record<string, { userId: string; exp: number; date: string }>;
