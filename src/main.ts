@@ -7,29 +7,30 @@ import {
   Intents,
   InteractionResponseTypes,
   MessageComponentTypes,
-  startBot
-} from "./deps.ts"
+  startBot,
+} from "./deps.ts";
 import { CommandCtrl, UserCommand } from "./UserCommand.ts";
 import { Game } from "./Game.ts";
 import { QuestManager } from "./Quest.ts";
-
-const commandCtrl = new CommandCtrl();
-const game = new Game();
-const questManager = new QuestManager();
-
-const DiceKey = "!!Dice";
+import { Template } from "./TextTemplate.ts";
 
 async function botLoop() {
+  const DiceKey = "!!Dice";
+  const commandCtrl = new CommandCtrl();
+  const game = new Game();
+  const questManager = new QuestManager();
 
   const bot = createBot({
-    token: Deno.env.get("discordToken"),
+    token: Deno.env.get("discordToken") ?? "",
     intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent,
     events: {
       ready() {
         console.log("Successfully connected to gateway");
       },
       guildCreate(bot, guild) {
-        const defaultChannel = guild.channels.find(channel => channel.type === ChannelTypes.GuildText);
+        const defaultChannel = guild.channels.find(
+          (channel) => channel.type === ChannelTypes.GuildText
+        );
         if (defaultChannel) {
           bot.helpers.sendMessage(defaultChannel.id, {
             content: `天道之大，欲行逆天，亦可獨行，也可抱團。\n使用 **\`${CommandCtrl.prefix}${CommandCtrl.keyword} 幫助\`** 獲得使用說明`,
@@ -41,42 +42,35 @@ async function botLoop() {
 
         const isCommand = commandCtrl.getCommandType(message.content);
         if (isCommand === null) return;
-        const { command, p } = isCommand;
+        const { command } = isCommand;
 
         switch (command) {
           case UserCommand.幫助: {
-            bot.helpers.sendMessage(message.channelId, { content: "不告訴你" });
+            const content = Template.help();
+            bot.helpers.sendMessage(message.channelId, { content });
             break;
           }
           case UserCommand.建立角色: {
             const role = game.createRole(message.authorId);
             game.addRole(role);
             game.storeRoleData();
-            bot.helpers.sendMessage(message.channelId, { content: `天道之下，又逢一位欲逆天改命之人。${message.tag}` });
+            const content = Template.createRole(message.tag);
+            bot.helpers.sendMessage(message.channelId, { content });
             break;
           }
           case UserCommand.狀態: {
             const role = game.getRole(message.authorId);
-            if (role) {
-              bot.helpers.sendMessage(message.channelId, { content: `${message.tag}目前的境界為\`${role.level.text}\`` });
-            } else {
-              bot.helpers.sendMessage(message.channelId, {
-                content: `請先使用指令 \`${CommandCtrl.prefix}${CommandCtrl.keyword} 建立角色\` 創建角色`,
-              });
-            }
+            const content = role
+              ? Template.status(message.tag, role.level.text)
+              : Template.noHasRole();
+            bot.helpers.sendMessage(message.channelId, { content });
+
             break;
           }
           case UserCommand.接受任務: {
             const role = game.getRole(message.authorId);
             if (role && role.executeQuest === null) {
               const quest = questManager.assignQuest(role);
-              bot.helpers.sendMessage(message.channelId, {
-                content: `\`\`\`md
-${quest.title}
-
-${quest.desc}
-\`\`\``,
-              });
 
               const components: ButtonComponent[] = [];
               const disabled = quest.type === "dice";
@@ -97,20 +91,26 @@ ${quest.desc}
                   disabled,
                 });
               });
-              setTimeout(() => {
-                bot.helpers.sendMessage(message.channelId, {
-                  components: [
-                    {
-                      type: MessageComponentTypes.ActionRow,
-                      components: components as any,
-                    },
-                  ],
-                });
-              }, 16);
-            } else {
+              const content = Template.questDesc(
+                quest.title,
+                quest.desc,
+                message.tag
+              );
               bot.helpers.sendMessage(message.channelId, {
-                content: `請使用指令 \`${CommandCtrl.prefix}${CommandCtrl.keyword} 建立角色\`來建立角色。\n若已建立角色，請使用  \`${CommandCtrl.prefix}${CommandCtrl.keyword} 接受任務\`來獲取任務。`,
+                content,
+                components: [
+                  {
+                    type: MessageComponentTypes.ActionRow,
+                    components: components as [ButtonComponent],
+                  },
+                ],
               });
+            } else {
+              const content =
+                role === undefined
+                  ? Template.noHasRole()
+                  : Template.alreadyHasQuest();
+              bot.helpers.sendMessage(message.channelId, { content });
             }
             break;
           }
@@ -118,32 +118,37 @@ ${quest.desc}
             const role = game.getRole(message.authorId);
             if (role) {
               if (role.executeQuest === null) {
-                bot.helpers.sendMessage(message.channelId, {
-                  content: "目前沒有接受的任務",
-                });
+                const content = Template.noHasQuest();
+                bot.helpers.sendMessage(message.channelId, { content });
               } else {
                 const { title } = role.executeQuest;
-                bot.helpers.sendMessage(message.channelId, { content: `已放棄 ${title} 任務` });
+                const content = Template.giveupQuest(title);
+                bot.helpers.sendMessage(message.channelId, { content });
                 role.executeQuest = null;
               }
             } else {
-              bot.helpers.sendMessage(message.channelId, {
-                content: `請先使用指令 \`${CommandCtrl.prefix}${CommandCtrl.keyword} 建立角色\` 創建角色`,
-              });
+              const content = Template.noHasRole();
+              bot.helpers.sendMessage(message.channelId, { content });
             }
             break;
           }
-          default:
-            bot.helpers.sendMessage(message.channelId, { content: "無效或未實現的指令" });
+          default: {
+            const content = Template.unavailableCommand();
+            bot.helpers.sendMessage(message.channelId, { content });
             break;
+          }
         }
       },
       interactionCreate(bot, interaction) {
         if (interaction.data?.customId === undefined) {
-          bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-            type: InteractionResponseTypes.ChannelMessageWithSource,
-            data: { content: "未知的錯誤" },
-          });
+          bot.helpers.sendInteractionResponse(
+            interaction.id,
+            interaction.token,
+            {
+              type: InteractionResponseTypes.ChannelMessageWithSource,
+              data: { content: Template.unknownError() },
+            }
+          );
           return;
         }
         const [_userid, customId] = interaction.data.customId.split(", ");
@@ -151,10 +156,14 @@ ${quest.desc}
         const userid = BigInt(_userid);
         const role = game.getRole(userid);
         if (role === undefined || role.executeQuest === null) {
-          bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
-            type: InteractionResponseTypes.ChannelMessageWithSource,
-            data: { content: "不正確的使用者" },
-          });
+          bot.helpers.sendInteractionResponse(
+            interaction.id,
+            interaction.token,
+            {
+              type: InteractionResponseTypes.ChannelMessageWithSource,
+              data: { content: Template.incorrectUser() },
+            }
+          );
         } else {
           if (customId === DiceKey) {
             role.executeQuest.onRoll(role);
@@ -162,9 +171,16 @@ ${quest.desc}
             role.executeQuest.onAnswer(customId);
           }
           if (role.executeQuest.anser) {
-            bot.helpers.deleteMessage(interaction.channelId!, interaction.message!.id);
+            bot.helpers.deleteMessage(
+              interaction.channelId!,
+              interaction.message!.id
+            );
             bot.helpers.sendMessage(interaction.channelId!, {
-              content: `已選擇了 ${role.executeQuest.anser!.desc} `,
+              content: Template.chooseQuestOption(
+                role.executeQuest.title,
+                role.executeQuest.desc,
+                role.executeQuest.anser!.desc
+              ),
             });
             role.gainExp(role.executeQuest.anser.score);
             role.executeQuest = null;
@@ -179,7 +195,7 @@ ${quest.desc}
 
 async function main() {
   console.log("The Server Version:", Deno.env.get("version"));
-  botLoop();
+  await botLoop();
 }
 
-main()
+main();

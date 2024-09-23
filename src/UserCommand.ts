@@ -32,16 +32,20 @@ export const CommandAlais: Record<string, UserCommand> = {
 export class CommandCtrl {
   static prefix = "%";
   static keyword = "修仙";
-  static keyword2 = "paradise";
-  static keyword3 = "xiuxian";
+  static keywords = ["paradise", "xiuxian", "xx"];
+  readonly regexp: RegExp;
+
+  constructor() {
+    const keywords = CommandCtrl.keywords.reduce((prev, curr) => {
+      return prev + "|" + curr;
+    }, CommandCtrl.keyword);
+    console.log(keywords);
+    this.regexp = new RegExp(`^${CommandCtrl.prefix}(${keywords})$`);
+  }
   private checkCommand(message: string) {
-    const regex = new RegExp(
-      `^${CommandCtrl.prefix}(${CommandCtrl.keyword}|${CommandCtrl.keyword2}|${CommandCtrl.keyword3})$`
-    );
-    if (regex.test(message)) return true;
+    if (this.regexp.test(message)) return true;
     else return false;
   }
-
   getCommandType(message: string) {
     const [p1, p2, ...p] = message.split(" ");
     const isCommand = this.checkCommand(p1);
