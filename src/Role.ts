@@ -37,9 +37,14 @@ export class Role {
 
   gainExp(exp: number) {
     this.exp += exp;
+    this.executeQuest = null;
   }
 
   toJSON() {
-    return { userId: this.userId.toString(), exp: this.exp, date: this.createDate };
+    return {
+      userId: this.userId.toString(),
+      exp: this.exp,
+      date: this.createDate,
+    };
   }
 }

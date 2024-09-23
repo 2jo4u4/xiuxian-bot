@@ -1,5 +1,5 @@
 export enum UserCommand {
-  幫助,
+  幫助 = 1,
   建立角色,
   狀態,
   接受任務,
@@ -15,11 +15,11 @@ export const CommandAlais: Record<string, UserCommand> = {
   狀態: UserCommand.狀態,
   status: UserCommand.狀態,
   接受任務: UserCommand.接受任務,
-  "get-quest": UserCommand.接受任務,
+  quest: UserCommand.接受任務,
   回覆任務: UserCommand.回覆任務,
-  "response-quest": UserCommand.回覆任務,
+  retuen: UserCommand.回覆任務,
   取消任務: UserCommand.取消任務,
-  "cancel-quest": UserCommand.取消任務,
+  cancel: UserCommand.取消任務,
   丟骰子: UserCommand.丟骰子,
   roll: UserCommand.丟骰子,
 };
@@ -39,7 +39,6 @@ export class CommandCtrl {
     const keywords = CommandCtrl.keywords.reduce((prev, curr) => {
       return prev + "|" + curr;
     }, CommandCtrl.keyword);
-    console.log(keywords);
     this.regexp = new RegExp(`^${CommandCtrl.prefix}(${keywords})$`);
   }
   private checkCommand(message: string) {
@@ -47,14 +46,14 @@ export class CommandCtrl {
     else return false;
   }
   getCommandType(message: string) {
-    const [p1, p2, ...p] = message.split(" ");
+    const [p1, p2, ...parameter] = message.split(" ");
     const isCommand = this.checkCommand(p1);
     if (isCommand) {
       if (p2 === undefined) return null;
 
       const command = CommandAlais[p2] ?? parseInt(p2);
       if (!isNaN(command)) {
-        return { command, p };
+        return { command, p: parameter };
       } else {
         return null;
       }

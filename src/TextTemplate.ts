@@ -8,14 +8,18 @@ const HelpDesc: Record<string, string> = {
 };
 
 export const Template = {
+  sayHi() {
+    const str = "天道之大，欲行逆天，亦可獨行，也可抱團。" + "\n" + this.help();
+    return str;
+  },
   help() {
     let str =
       "```md\n" +
-      "請使用 " +
+      "> 請使用 " +
       CommandCtrl.prefix +
       CommandCtrl.keyword +
-      " 作為指令前墜" +
-      "\n可替換為: ";
+      " 作為指令前墜\n" +
+      "> 可替換為: ";
 
     CommandCtrl.keywords.forEach((keyword, index) => {
       if (index !== 0) {

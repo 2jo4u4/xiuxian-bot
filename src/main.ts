@@ -14,6 +14,17 @@ import { Game } from "./Game.ts";
 import { QuestManager } from "./Quest.ts";
 import { Template } from "./TextTemplate.ts";
 
+const symbolCustomId = ", ";
+function createBtnCustomId(...ss: string[]) {
+  return ss.reduce((prev, curr, index) => {
+    if (index === 0) return curr;
+    return prev + symbolCustomId + curr;
+  }, "");
+}
+function splitBtnCustomId(s: string) {
+  return s.split(symbolCustomId);
+}
+
 async function botLoop() {
   const DiceKey = "!!Dice";
   const commandCtrl = new CommandCtrl();
@@ -32,9 +43,8 @@ async function botLoop() {
           (channel) => channel.type === ChannelTypes.GuildText
         );
         if (defaultChannel) {
-          bot.helpers.sendMessage(defaultChannel.id, {
-            content: `天道之大，欲行逆天，亦可獨行，也可抱團。\n使用 **\`${CommandCtrl.prefix}${CommandCtrl.keyword} 幫助\`** 獲得使用說明`,
-          });
+          const content = Template.sayHi();
+          bot.helpers.sendMessage(defaultChannel.id, { content });
         }
       },
       messageCreate(bot, message) {
@@ -79,7 +89,7 @@ async function botLoop() {
                   type: MessageComponentTypes.Button,
                   label: "投骰子",
                   style: ButtonStyles.Primary,
-                  customId: `${role.userId.toString()}, ${DiceKey}`,
+                  customId: createBtnCustomId(role.userId.toString(), DiceKey),
                 });
               }
               quest.options.forEach(({ desc, ansId }) => {
@@ -87,7 +97,7 @@ async function botLoop() {
                   type: MessageComponentTypes.Button,
                   label: desc,
                   style: ButtonStyles.Primary,
-                  customId: `${role.userId.toString()}, ${ansId}`,
+                  customId: createBtnCustomId(role.userId.toString(), ansId),
                   disabled,
                 });
               });
@@ -116,18 +126,15 @@ async function botLoop() {
           }
           case UserCommand.取消任務: {
             const role = game.getRole(message.authorId);
-            if (role) {
-              if (role.executeQuest === null) {
-                const content = Template.noHasQuest();
-                bot.helpers.sendMessage(message.channelId, { content });
-              } else {
-                const { title } = role.executeQuest;
-                const content = Template.giveupQuest(title);
-                bot.helpers.sendMessage(message.channelId, { content });
-                role.executeQuest = null;
-              }
+            if (role && role.executeQuest !== null) {
+              const content = Template.giveupQuest(role.executeQuest.title);
+              bot.helpers.sendMessage(message.channelId, { content });
+              role.executeQuest = null;
             } else {
-              const content = Template.noHasRole();
+              const content =
+                role === undefined
+                  ? Template.noHasRole()
+                  : Template.noHasQuest();
               bot.helpers.sendMessage(message.channelId, { content });
             }
             break;
@@ -140,7 +147,10 @@ async function botLoop() {
         }
       },
       interactionCreate(bot, interaction) {
-        if (interaction.data?.customId === undefined) {
+        if (
+          interaction.data === undefined ||
+          interaction.data.customId === undefined
+        ) {
           bot.helpers.sendInteractionResponse(
             interaction.id,
             interaction.token,
@@ -151,7 +161,7 @@ async function botLoop() {
           );
           return;
         }
-        const [_userid, customId] = interaction.data.customId.split(", ");
+        const [_userid, customId] = splitBtnCustomId(interaction.data.customId);
 
         const userid = BigInt(_userid);
         const role = game.getRole(userid);
@@ -183,7 +193,6 @@ async function botLoop() {
               ),
             });
             role.gainExp(role.executeQuest.anser.score);
-            role.executeQuest = null;
           }
         }
       },
