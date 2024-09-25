@@ -3,6 +3,7 @@
     "lib": ["deno.ns", "deno.window"]
   },
   "tasks": {
+    "protoc":"protoc.sh",
     "start": "deno run --allow-net --allow-write --allow-read --allow-env --watch ./src/main.ts",
     "exec": "deno run --allow-net --allow-write --allow-read --allow-env ./src/main.ts"
   },
