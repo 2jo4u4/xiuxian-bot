@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
     "lib": ["deno.ns", "deno.window"]
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-write --allow-read --allow-env --watch ./src/main.ts",
+    "exec": "deno run --allow-net --allow-write --allow-read --allow-env ./src/main.ts"
+  },
+  "imports": {
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
+    "@std/log": "jsr:@std/log@^0.224.7"
   }
 }

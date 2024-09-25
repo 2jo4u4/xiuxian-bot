@@ -1,4 +1,4 @@
-import { join } from "./deps.ts";
+import { join } from "../../deps.ts";
 
 export interface DataBaseType {
   role: Record<string, { userId: string; exp: number; date: string }>;

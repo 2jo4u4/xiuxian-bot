@@ -1,0 +1,4 @@
+.env.example
+.env.default
+.vscode/
+README.md
