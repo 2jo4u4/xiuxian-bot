@@ -1,10 +1,12 @@
 import { load as envLoad } from "./deps.ts";
 import { botLoop } from "./module/feature/Bot.ts";
-import * as storage from "./storage/mod.ts";
 import { init as logInit } from "./module/log/mod.ts";
+import { init as storeInit } from "./storage/mod.ts";
+import { exampleGetFromFile, exampleSaveToFile } from "./storage/example.ts";
 
 function envWithoutBot() {
-  storage.init();
+  exampleSaveToFile();
+  exampleGetFromFile();
 }
 function envDevelop() {
   botLoop();
@@ -17,6 +19,7 @@ function main() {
   envLoad();
   // setup the log
   logInit();
+  storeInit();
   // choose the env
   switch (Deno.env.get("ENV")) {
     case "withoutBot":

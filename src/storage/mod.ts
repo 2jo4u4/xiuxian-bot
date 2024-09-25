@@ -1,39 +1,22 @@
 import { getLogger } from "jsr:@std/log";
 import { existsSync, join } from "../deps.ts";
-import {encodeBinary,decodeBinary,Type as Person} from "../definition/messages/Person.ts"
 
-enum StorageFilename {
+export enum StorageFilename {
     People,
+    Person,
 }
 
 function log() {
     return getLogger("storage");
 }
-function toBinaray():Uint8Array{
-    let bys:Person={id:1,name:"boyou"}
-    let bytes:Uint8Array=encodeBinary(bys)
-    // let str = ""
-    // for (let i = 0; i < bytes.length; i++) {
-    //     str += bytes[i].toString(16).padStart(2, '0')
-    // }
-    // console.log(str)
-    return bytes
-}
-function decode(bytes:Uint8Array):void{
-    let bys:Person=decodeBinary(bytes)
-    console.log(bys)
+
+export function init(): void {
+    // create the folders
+    const folderpath = join(Deno.cwd(), Deno.env.get("STORAGEFOLDER") ?? "");
+    log().debug(`The store folder path:${folderpath}`);
+    Deno.mkdirSync(folderpath);
 }
 
-function test(){
-    let bytes=toBinaray()
-    decode(bytes);
-}
-
-export function init() {
-    log().info("hello this is stoarge mod");
-    // read(StorageFilename.People);
-    // test();
-}
 export function write(filename: StorageFilename, data: Uint8Array): void {
     const filepath = join(
         Deno.cwd(),
@@ -44,7 +27,7 @@ export function write(filename: StorageFilename, data: Uint8Array): void {
     Deno.writeFileSync(filepath, data);
 }
 
-export function read(filename: StorageFilename): false | Uint8Array {
+export function read(filename: StorageFilename): Uint8Array {
     const filepath = join(
         Deno.cwd(),
         Deno.env.get("STORAGEFOLDER") ?? "",
@@ -53,7 +36,7 @@ export function read(filename: StorageFilename): false | Uint8Array {
     log().debug(filepath);
     if (!existsSync(filepath)) {
         log().error(`The file not exists ${filepath} !!`);
-        return false;
+        throw new Error(`The file not exists${filepath}`);
     }
     return Deno.readFileSync(filepath);
 }
