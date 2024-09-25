@@ -21,6 +21,10 @@ export function init() {
                 level: "DEBUG",
                 handlers: ["console"],
             },
+            json: {
+                level: "DEBUG",
+                handlers: ["jsonStdout"],
+            },
             storage: {
                 level: "DEBUG",
                 handlers: ["console", "jsonStdout", "customSample"],
