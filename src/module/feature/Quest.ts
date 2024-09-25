@@ -1,15 +1,29 @@
-import { Quest, QuestOptions } from "./DataBase.ts";
+import { database, Quest, QuestOptions } from "./DataBase.ts";
 import { Role } from "./Role.ts";
 
 export class QuestManager {
-  questMap: Map<string, QuestNode>;
+  normalQuestMap: Map<string, QuestNode>;
+  hardQuestMap: Map<string, QuestNode>;
   constructor() {
-    this.questMap = new Map();
+    this.normalQuestMap = new Map();
+    this.hardQuestMap = new Map();
   }
   assignQuest(role: Role) {
     const node = this.randomQuest();
     role.executeQuest = node;
     return node;
+  }
+
+  async injectQuestData() {
+    const [normal, hard] = await Promise.all([
+      database.getQuestData("normal"),
+      database.getQuestData("hard"),
+    ]);
+
+    // Object.keys(normal).forEach((key)=>{
+    //   const val = normal[key]
+    //   this.normalQuestMap.set(key, new QuestNode())
+    // })
   }
 
   private randomQuest() {
@@ -27,19 +41,18 @@ export class QuestManager {
   }
 }
 
-type QuestNodeType = "multiple" | "dice";
 export class QuestNode {
-  readonly type: QuestNodeType;
+  readonly type: Quest["type"];
   readonly questId: Quest["id"];
-  readonly title: string;
-  readonly desc: string;
-  readonly options: QuestOptions[];
+  readonly title: Quest["title"];
+  readonly desc: Quest["desc"];
+  readonly options: Quest["options"];
   anser?: QuestOptions;
   get isAnswered() {
     return this.anser !== undefined;
   }
 
-  constructor(config: Quest & { type: QuestNodeType }) {
+  constructor(config: Quest) {
     const { title, desc, options, id, type } = config;
     this.questId = id;
     this.title = title;
@@ -51,7 +64,7 @@ export class QuestNode {
     if (this.isAnswered) return false;
 
     if (this.type === "multiple") {
-      const anser = this.options.find(item => item.ansId === id);
+      const anser = this.options.find((item) => item.ansId === id);
       if (anser) {
         this.anser = anser;
       }

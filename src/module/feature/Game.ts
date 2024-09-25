@@ -1,34 +1,64 @@
-import { DataBaseType, database } from "./DataBase.ts";
+import { database, RoleJson } from "./DataBase.ts";
 import { Role } from "./Role.ts";
 
+type GuildId = bigint;
+type UserId = bigint;
 export class Game {
-  roles: Map<bigint, Role>;
+  guildMap: Map<GuildId, Map<UserId, Role>>;
   constructor() {
-    this.roles = new Map();
-    this.injectRoleData();
-  }
-  createRole(userId: bigint) {
-    if (this.roles.has(userId)) return this.getRole(userId) as Role;
-    return new Role({ userId });
-  }
-  addRole(role: Role) {
-    this.roles.set(role.userId, role);
-  }
-  getRole(userId: bigint) {
-    return this.roles.get(userId);
-  }
-  storeRoleData() {
-    const roles = Array.from(this.roles).reduce((prev, [_, role]) => {
-      return { ...prev, [role.userId.toString()]: role.toJSON() };
-    }, {} as DataBaseType["role"]);
-    database.storeRole(JSON.stringify({ ...roles }));
+    this.guildMap = new Map();
   }
 
-  private async injectRoleData() {
-    const data = await database.getDataBase("role");
-    Object.keys(data).forEach(key => {
+  getGuild(guildId: GuildId) {
+    return this.guildMap.get(guildId);
+  }
+  getRole(guildId: GuildId, userId: UserId): Role | undefined {
+    if (this.guildMap.has(guildId)) {
+      return this.guildMap.get(guildId)!.get(userId);
+    }
+    return undefined;
+  }
+  createRole(guildId: GuildId, userId: UserId) {
+    const role = this.getRole(guildId, userId);
+    if (role) return role;
+    return new Role({ userId, guildId });
+  }
+  addRole(role: Role) {
+    const guild = this.getGuild(role.guildId);
+    if (guild) {
+      guild.set(role.userId, role);
+    } else {
+      this.guildMap.set(role.guildId, new Map([[role.userId, role]]));
+    }
+  }
+
+  async injectRoleData(guildId: bigint) {
+    const data = await database.getRoleData(guildId.toString());
+    Object.keys(data).forEach((key) => {
       const { userId, exp, date } = data[key];
-      this.addRole(new Role({ userId: BigInt(userId), exp, date }));
+      const role = new Role({ userId: BigInt(userId), exp, date, guildId });
+      this.addRole(role);
     });
+  }
+
+  async onDestroy() {
+    await Promise.all(
+      Array.from(this.guildMap).map(([guildId, userMap]) => {
+        return database.storeRoleData(
+          guildId.toString(),
+          this.userMap2json(userMap)
+        );
+      })
+    );
+  }
+
+  private userMap2json(map: Map<bigint, Role>) {
+    const json: RoleJson = {};
+    map.forEach((role) => {
+      const userId = role.userId.toString();
+      json[userId] = { userId, exp: role.exp, date: role.createDate };
+    });
+
+    return JSON.stringify(json);
   }
 }

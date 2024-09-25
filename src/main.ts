@@ -5,32 +5,32 @@ import { init as storeInit } from "./storage/mod.ts";
 import { exampleGetFromFile, exampleSaveToFile } from "./storage/example.ts";
 
 function envWithoutBot() {
-    exampleSaveToFile();
-    exampleGetFromFile();
+  exampleSaveToFile();
+  exampleGetFromFile();
 }
 function envDevelop() {
-    botLoop();
+  botLoop();
 }
 function envProduct() {
-    botLoop();
+  botLoop();
 }
 
 function main() {
-    envLoad();
-    // setup the log
-    logInit();
-    storeInit();
-    // choose the env
-    switch (Deno.env.get("ENV")) {
-        case "withoutBot":
-            envWithoutBot();
-            break;
-        case "product":
-            envProduct();
-            break;
-        default:
-            envDevelop();
-            break;
-    }
+  envLoad();
+  // setup the log
+  logInit();
+  storeInit();
+  // choose the env
+  switch (Deno.env.get("ENV")) {
+    case "withoutBot":
+      envWithoutBot();
+      break;
+    case "product":
+      envProduct();
+      break;
+    default:
+      envDevelop();
+      break;
+  }
 }
 main();

@@ -1,11 +1,13 @@
-import { join } from "../../deps.ts";
+import { join, existsSync } from "../../deps.ts";
 
-export interface DataBaseType {
-  role: Record<string, { userId: string; exp: number; date: string }>;
-  quest: Record<string, Quest[]>;
-}
+export type RoleJson = Record<
+  string,
+  { userId: string; exp: number; date: string }
+>;
+export type QuestJson = Record<string, Quest[]>;
 export interface Quest {
   id: string;
+  type: "multiple" | "dice";
   title: string;
   desc: string;
   options: QuestOptions[];
@@ -18,27 +20,42 @@ export interface QuestOptions {
 
 class DataBase {
   readonly rootDir: string;
+  readonly roleDir: string;
+  readonly questDir: string;
   constructor() {
     this.rootDir = Deno.cwd();
+    this.roleDir = "role";
+    this.questDir = "quest";
   }
-  async getDataBase<T extends keyof DataBaseType>(type: T) {
-    const file = join(this.rootDir, "static", `${type}.json`);
+
+  async getRoleData(guildId: string): Promise<RoleJson> {
+    const file = join(this.rootDir, "static", this.roleDir, `${guildId}.json`);
+    const isExistFile = existsSync(file);
+    if (isExistFile) {
+      const decoder = new TextDecoder("utf-8");
+      const data = await Deno.readFile(file);
+      const result = decoder.decode(data);
+      return JSON.parse(result);
+    } else {
+      await Deno.writeTextFile(file, "{}");
+      return {};
+    }
+  }
+  async storeRoleData(guildId: string, json: string) {
+    const file = join(this.rootDir, "static", this.roleDir, `${guildId}.json`);
+    await Deno.writeTextFile(file, json);
+  }
+  async getQuestData(difficulty: "normal" | "hard"): Promise<QuestJson> {
+    const file = join(
+      this.rootDir,
+      "static",
+      this.questDir,
+      `${difficulty}.json`
+    );
     const decoder = new TextDecoder("utf-8");
     const data = await Deno.readFile(file);
     const result = decoder.decode(data);
-    return JSON.parse(result) as DataBaseType[T];
-  }
-
-  async storeRole(json: string) {
-    const file = join(this.rootDir, "static", "role.json");
-
-    try {
-      await Deno.writeTextFile(file, json);
-      return 0;
-    } catch (err) {
-      console.error(err);
-      return 1;
-    }
+    return JSON.parse(result);
   }
 }
 

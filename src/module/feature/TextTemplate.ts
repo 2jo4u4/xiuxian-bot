@@ -77,7 +77,6 @@ export const Template = {
       "。";
     return str;
   },
-
   noHasQuest() {
     return "目前沒有接受的任務";
   },
@@ -97,11 +96,9 @@ export const Template = {
   giveupQuest(title: string) {
     return `已放棄 ${title} 任務`;
   },
-
   incorrectUser() {
     return "不正確的使用者";
   },
-
   unavailableCommand() {
     return "無效或未實現的指令。";
   },
