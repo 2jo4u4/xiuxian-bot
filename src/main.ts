@@ -2,11 +2,18 @@ import { load as envLoad } from "./deps.ts";
 import { botLoop } from "./module/feature/Bot.ts";
 import { init as logInit } from "./module/log/mod.ts";
 import { init as storeInit } from "./storage/mod.ts";
-import { exampleGetFromFile, exampleSaveToFile } from "./storage/example.ts";
+import {
+    exampleGetFromFile,
+    examplePeopleRead,
+    examplePeopleWrite,
+    exampleSaveToFile,
+} from "./storage/example.ts";
 
 function envWithoutBot() {
-  exampleSaveToFile();
-  exampleGetFromFile();
+    exampleSaveToFile();
+    exampleGetFromFile();
+    examplePeopleWrite();
+    examplePeopleRead();
 }
 function envDevelop() {
   botLoop();

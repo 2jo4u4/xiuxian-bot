@@ -14,7 +14,7 @@ export function init(): void {
     // create the folders
     const folderpath = join(Deno.cwd(), Deno.env.get("STORAGEFOLDER") ?? "");
     log().debug(`The store folder path:${folderpath}`);
-    Deno.mkdirSync(folderpath);
+    Deno.mkdirSync(folderpath, { recursive: true });
 }
 
 export function write(filename: StorageFilename, data: Uint8Array): void {
