@@ -25,7 +25,10 @@ function splitBtnCustomId(s: string) {
   return s.split(symbolCustomId);
 }
 
-export async function botLoop() {
+/**
+ * @returns 關閉伺服器前執行
+ */
+export async function botLoop(): Promise<() => Promise<void>> {
   const DiceKey = "!!Dice";
   const commandCtrl = new CommandCtrl();
   const game = new Game();
@@ -39,6 +42,8 @@ export async function botLoop() {
         console.log("Successfully connected to gateway");
       },
       guildCreate(bot, guild) {
+        game.injectRoleData(guild.id);
+
         const defaultChannel = guild.channels.find(
           (channel) => channel.type === ChannelTypes.GuildText
         );
@@ -48,37 +53,37 @@ export async function botLoop() {
         }
       },
       messageCreate(bot, message) {
-        if (message.isFromBot) return;
+        if (message.isFromBot || message.guildId === undefined) return;
 
         const isCommand = commandCtrl.getCommandType(message.content);
         if (isCommand === null) return;
         const { command } = isCommand;
+        const { guildId, authorId, channelId, tag } = message;
 
         switch (command) {
           case UserCommand.幫助: {
             const content = Template.help();
-            bot.helpers.sendMessage(message.channelId, { content });
+            bot.helpers.sendMessage(channelId, { content });
             break;
           }
           case UserCommand.建立角色: {
-            const role = game.createRole(message.authorId);
+            const role = game.createRole(guildId, authorId);
             game.addRole(role);
-            game.storeRoleData();
-            const content = Template.createRole(message.tag);
-            bot.helpers.sendMessage(message.channelId, { content });
+            const content = Template.createRole(tag);
+            bot.helpers.sendMessage(channelId, { content });
             break;
           }
           case UserCommand.狀態: {
-            const role = game.getRole(message.authorId);
+            const role = game.getRole(guildId, authorId);
             const content = role
-              ? Template.status(message.tag, role.level.text)
+              ? Template.status(tag, role.level.text)
               : Template.noHasRole();
-            bot.helpers.sendMessage(message.channelId, { content });
+            bot.helpers.sendMessage(channelId, { content });
 
             break;
           }
           case UserCommand.接受任務: {
-            const role = game.getRole(message.authorId);
+            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest === null) {
               const quest = questManager.assignQuest(role);
 
@@ -101,12 +106,8 @@ export async function botLoop() {
                   disabled,
                 });
               });
-              const content = Template.questDesc(
-                quest.title,
-                quest.desc,
-                message.tag
-              );
-              bot.helpers.sendMessage(message.channelId, {
+              const content = Template.questDesc(quest.title, quest.desc, tag);
+              bot.helpers.sendMessage(channelId, {
                 content,
                 components: [
                   {
@@ -120,28 +121,28 @@ export async function botLoop() {
                 role === undefined
                   ? Template.noHasRole()
                   : Template.alreadyHasQuest();
-              bot.helpers.sendMessage(message.channelId, { content });
+              bot.helpers.sendMessage(channelId, { content });
             }
             break;
           }
           case UserCommand.取消任務: {
-            const role = game.getRole(message.authorId);
+            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest !== null) {
               const content = Template.giveupQuest(role.executeQuest.title);
-              bot.helpers.sendMessage(message.channelId, { content });
+              bot.helpers.sendMessage(channelId, { content });
               role.executeQuest = null;
             } else {
               const content =
                 role === undefined
                   ? Template.noHasRole()
                   : Template.noHasQuest();
-              bot.helpers.sendMessage(message.channelId, { content });
+              bot.helpers.sendMessage(channelId, { content });
             }
             break;
           }
           default: {
             const content = Template.unavailableCommand();
-            bot.helpers.sendMessage(message.channelId, { content });
+            bot.helpers.sendMessage(channelId, { content });
             break;
           }
         }
@@ -149,7 +150,8 @@ export async function botLoop() {
       interactionCreate(bot, interaction) {
         if (
           interaction.data === undefined ||
-          interaction.data.customId === undefined
+          interaction.data.customId === undefined ||
+          interaction.guildId === undefined
         ) {
           bot.helpers.sendInteractionResponse(
             interaction.id,
@@ -164,7 +166,7 @@ export async function botLoop() {
         const [_userid, customId] = splitBtnCustomId(interaction.data.customId);
 
         const userid = BigInt(_userid);
-        const role = game.getRole(userid);
+        const role = game.getRole(interaction.guildId, userid);
         if (role === undefined || role.executeQuest === null) {
           bot.helpers.sendInteractionResponse(
             interaction.id,
@@ -200,4 +202,8 @@ export async function botLoop() {
   });
 
   await startBot(bot);
+
+  return async () => {
+    await game.onDestroy();
+  };
 }

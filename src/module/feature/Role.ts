@@ -9,8 +9,9 @@ export enum LevelThreshold {
 
 export class Role {
   readonly userId: bigint;
+  readonly guildId: bigint;
   readonly createDate: string;
-  private exp: number;
+  exp: number;
 
   executeQuest: QuestNode | null;
   get level() {
@@ -27,9 +28,15 @@ export class Role {
         return { text: "練氣境", priority: 0 };
     }
   }
-  constructor(status: { userId: bigint; exp?: number; date?: string }) {
-    const { userId, exp = 0, date } = status;
+  constructor(status: {
+    userId: bigint;
+    guildId: bigint;
+    exp?: number;
+    date?: string;
+  }) {
+    const { userId, guildId, exp = 0, date } = status;
     this.userId = userId;
+    this.guildId = guildId;
     this.exp = exp;
     this.createDate = date ?? new Date().toDateString();
     this.executeQuest = null;
@@ -42,7 +49,8 @@ export class Role {
 
   toJSON() {
     return {
-      userId: this.userId.toString(),
+      userId: this.userId,
+      guildId: this.guildId,
       exp: this.exp,
       date: this.createDate,
     };
