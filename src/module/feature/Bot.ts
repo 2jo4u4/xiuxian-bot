@@ -33,6 +33,7 @@ export async function botLoop(): Promise<() => Promise<void>> {
   const commandCtrl = new CommandCtrl();
   const game = new Game();
   const questManager = new QuestManager();
+  questManager.injectQuestData();
 
   const bot = createBot({
     token: Deno.env.get("DISCORDTOKEN") ?? "",
@@ -90,19 +91,28 @@ export async function botLoop(): Promise<() => Promise<void>> {
               const components: ButtonComponent[] = [];
               const disabled = quest.type === "dice";
               if (disabled) {
+                const customId = createBtnCustomId(
+                  role.userId.toString(),
+                  DiceKey
+                );
                 components.push({
                   type: MessageComponentTypes.Button,
                   label: "投骰子",
                   style: ButtonStyles.Primary,
-                  customId: createBtnCustomId(role.userId.toString(), DiceKey),
+                  customId,
                 });
               }
               quest.options.forEach(({ desc, ansId }) => {
+                const customId = createBtnCustomId(
+                  role.userId.toString(),
+                  ansId
+                );
+                console.log({ customId });
                 components.push({
                   type: MessageComponentTypes.Button,
                   label: desc,
                   style: ButtonStyles.Primary,
-                  customId: createBtnCustomId(role.userId.toString(), ansId),
+                  customId,
                   disabled,
                 });
               });

@@ -34,8 +34,7 @@ export class Game {
 
   async injectRoleData(guildId: bigint) {
     const data = await database.getRoleData(guildId.toString());
-    Object.keys(data).forEach((key) => {
-      const { userId, exp, date } = data[key];
+    data.forEach(({ userId, exp, date }) => {
       const role = new Role({ userId: BigInt(userId), exp, date, guildId });
       this.addRole(role);
     });
@@ -43,20 +42,17 @@ export class Game {
 
   async onDestroy() {
     await Promise.all(
-      Array.from(this.guildMap).map(([guildId, userMap]) => {
-        return database.storeRoleData(
-          guildId.toString(),
-          this.userMap2json(userMap)
-        );
-      })
+      Array.from(this.guildMap).map(([guildId, userMap]) =>
+        database.storeRoleData(guildId.toString(), this.userMap2json(userMap))
+      )
     );
   }
 
   private userMap2json(map: Map<bigint, Role>) {
-    const json: RoleJson = {};
+    const json: RoleJson = [];
     map.forEach((role) => {
       const userId = role.userId.toString();
-      json[userId] = { userId, exp: role.exp, date: role.createDate };
+      json.push({ userId, exp: role.exp, date: role.createDate });
     });
 
     return JSON.stringify(json);

@@ -1,10 +1,12 @@
 import { join, existsSync } from "../../deps.ts";
 
-export type RoleJson = Record<
-  string,
-  { userId: string; exp: number; date: string }
->;
-export type QuestJson = Record<string, Quest[]>;
+export type RoleJson = Role[];
+export interface Role {
+  userId: string;
+  exp: number;
+  date: string;
+}
+export type QuestJson = Quest[];
 export interface Quest {
   id: string;
   type: "multiple" | "dice";
@@ -37,8 +39,8 @@ class DataBase {
       const result = decoder.decode(data);
       return JSON.parse(result);
     } else {
-      await Deno.writeTextFile(file, "{}");
-      return {};
+      await Deno.writeTextFile(file, "[]");
+      return [];
     }
   }
   async storeRoleData(guildId: string, json: string) {

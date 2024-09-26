@@ -20,24 +20,25 @@ export class QuestManager {
       database.getQuestData("hard"),
     ]);
 
-    // Object.keys(normal).forEach((key)=>{
-    //   const val = normal[key]
-    //   this.normalQuestMap.set(key, new QuestNode())
-    // })
+    normal.forEach((quest) => {
+      this.normalQuestMap.set(quest.id, new QuestNode(quest));
+    });
+    hard.forEach((quest) => {
+      this.hardQuestMap.set(quest.id, new QuestNode(quest));
+    });
   }
 
-  private randomQuest() {
-    return new QuestNode({
-      type: Math.random() > 0.5 ? "dice" : "multiple",
-      id: "q-1",
-      title: "測試任務",
-      desc: "測試任務",
-      options: [
-        { ansId: "a-1", desc: "選項一", score: 100 },
-        { ansId: "a-2", desc: "選項二", score: 1 },
-        { ansId: "a-3", desc: "選項三", score: 10 },
-      ],
-    });
+  private randomQuest(): QuestNode {
+    if (Math.random() > 0.7) {
+      // hard
+    } else {
+      // normal
+      // const q = Math.ceil(Math.random() * this.normalQuestMap.size);
+      // return Array.from(this.normalQuestMap)[q][1];
+    }
+
+    const q = Math.ceil(Math.random() * this.normalQuestMap.size) - 1;
+    return Array.from(this.normalQuestMap)[q][1];
   }
 }
 
