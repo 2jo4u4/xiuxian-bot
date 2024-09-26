@@ -15,10 +15,7 @@ export const Template = {
   help() {
     let str =
       "```md\n" +
-      "> 請使用 " +
-      CommandCtrl.prefix +
-      CommandCtrl.keyword +
-      " 作為指令前墜\n" +
+      `> 請使用 ${CommandCtrl.prefix}${CommandCtrl.keyword} 作為指令前墜\n` +
       "> 可替換為: ";
 
     CommandCtrl.keywords.forEach((keyword, index) => {

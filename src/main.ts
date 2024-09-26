@@ -3,20 +3,25 @@ import { botLoop } from "./module/feature/Bot.ts";
 import { init as logInit } from "./module/log/mod.ts";
 import { init as storeInit } from "./storage/mod.ts";
 import {
-    exampleGetFromFile,
-    examplePeopleRead,
-    examplePeopleWrite,
-    exampleSaveToFile,
+  exampleGetFromFile,
+  examplePeopleRead,
+  examplePeopleWrite,
+  exampleSaveToFile,
 } from "./storage/example.ts";
 
 function envWithoutBot() {
-    exampleSaveToFile();
-    exampleGetFromFile();
-    examplePeopleWrite();
-    examplePeopleRead();
+  exampleSaveToFile();
+  exampleGetFromFile();
+  examplePeopleWrite();
+  examplePeopleRead();
 }
 function envDevelop() {
-  botLoop();
+  botLoop().then((destroy) => {
+    Deno.addSignalListener("SIGINT", async () => {
+      await destroy();
+      Deno.exit();
+    });
+  });
 }
 function envProduct() {
   botLoop();

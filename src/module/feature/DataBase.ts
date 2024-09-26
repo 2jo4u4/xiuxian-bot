@@ -24,7 +24,7 @@ class DataBase {
   readonly questDir: string;
   constructor() {
     this.rootDir = Deno.cwd();
-    this.roleDir = "role";
+    this.roleDir = "roles";
     this.questDir = "quest";
   }
 

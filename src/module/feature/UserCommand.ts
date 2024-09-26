@@ -6,6 +6,8 @@ export enum UserCommand {
   丟骰子,
   回覆任務,
   取消任務,
+  閉關,
+  閉關結束,
 }
 export const CommandAlais: Record<string, UserCommand> = {
   幫助: UserCommand.幫助,
@@ -22,8 +24,14 @@ export const CommandAlais: Record<string, UserCommand> = {
   cancel: UserCommand.取消任務,
   丟骰子: UserCommand.丟骰子,
   roll: UserCommand.丟骰子,
+  閉關: UserCommand.閉關,
+  training: UserCommand.閉關,
+  閉關結束: UserCommand.閉關結束,
+  trainingQuit: UserCommand.閉關結束,
 };
-
+export enum SecondCommand {
+  了解特定指令,
+}
 /**
  * @example```
  * %修仙 建立角色
@@ -60,5 +68,9 @@ export class CommandCtrl {
     } else {
       return null;
     }
+  }
+
+  getSecondCommand(...parameter: string[]) {
+    return null;
   }
 }
