@@ -1,18 +1,26 @@
+import { getLogger } from "@std/log";
 import { database, RoleJson } from "./DataBase.ts";
-import { Role } from "./Role.ts";
+import { UserRole } from "./UserRole.ts";
 
 type GuildId = bigint;
 type UserId = bigint;
 export class Game {
-  guildMap: Map<GuildId, Map<UserId, Role>>;
+  guildMap: Map<GuildId, Map<UserId, UserRole>>;
+  readonly log: ReturnType<typeof getLogger>;
   constructor() {
     this.guildMap = new Map();
+    this.log = getLogger("default");
+    setInterval(() => {
+      this.log.debug("開始存檔");
+      this.storeUser();
+      this.log.debug("存檔完成");
+    }, 300 * 1000);
   }
 
   getGuild(guildId: GuildId) {
     return this.guildMap.get(guildId);
   }
-  getRole(guildId: GuildId, userId: UserId): Role | undefined {
+  getRole(guildId: GuildId, userId: UserId): UserRole | undefined {
     if (this.guildMap.has(guildId)) {
       return this.guildMap.get(guildId)!.get(userId);
     }
@@ -21,9 +29,9 @@ export class Game {
   createRole(guildId: GuildId, userId: UserId) {
     const role = this.getRole(guildId, userId);
     if (role) return role;
-    return new Role({ userId, guildId });
+    return new UserRole({ userId, guildId });
   }
-  addRole(role: Role) {
+  addRole(role: UserRole) {
     const guild = this.getGuild(role.guildId);
     if (guild) {
       guild.set(role.userId, role);
@@ -31,30 +39,31 @@ export class Game {
       this.guildMap.set(role.guildId, new Map([[role.userId, role]]));
     }
   }
-
-  async injectRoleData(guildId: bigint) {
-    const data = await database.getRoleData(guildId.toString());
-    data.forEach(({ userId, exp, date }) => {
-      const role = new Role({ userId: BigInt(userId), exp, date, guildId });
+  injectUsers() {
+    const users = database.readUsers();
+    users.role.forEach(({ guildId, userId, exp, date }) => {
+      const role = new UserRole({
+        userId: BigInt(userId),
+        guildId: BigInt(guildId),
+        exp,
+        date,
+      });
       this.addRole(role);
     });
   }
-
-  async onDestroy() {
-    await Promise.all(
-      Array.from(this.guildMap).map(([guildId, userMap]) =>
-        database.storeRoleData(guildId.toString(), this.userMap2json(userMap))
-      )
+  storeUser() {
+    database.storeUsers(
+      Array.from(this.guildMap).reduce((prev, [_, roleMap]) => {
+        return prev.concat(this.userMap2json(roleMap));
+      }, [] as RoleJson)
     );
   }
-
-  private userMap2json(map: Map<bigint, Role>) {
+  private userMap2json(map: Map<bigint, UserRole>) {
     const json: RoleJson = [];
     map.forEach((role) => {
-      const userId = role.userId.toString();
-      json.push({ userId, exp: role.exp, date: role.createDate });
+      json.push({ ...role.toRole(), id: json.length + 1 });
     });
 
-    return JSON.stringify(json);
+    return json;
   }
 }

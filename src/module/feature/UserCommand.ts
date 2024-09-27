@@ -8,6 +8,7 @@ export enum UserCommand {
   取消任務,
   閉關,
   閉關結束,
+  關閉伺服器 = 999,
 }
 export const CommandAlais: Record<string, UserCommand> = {
   幫助: UserCommand.幫助,

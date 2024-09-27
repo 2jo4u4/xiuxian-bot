@@ -1,50 +1,39 @@
 import { database, Quest, QuestOptions } from "./DataBase.ts";
-import { Role } from "./Role.ts";
+import { UserRole } from "./UserRole.ts";
 
 export class QuestManager {
-  normalQuestMap: Map<string, QuestNode>;
-  hardQuestMap: Map<string, QuestNode>;
+  questBoard: QuestNode[];
   constructor() {
-    this.normalQuestMap = new Map();
-    this.hardQuestMap = new Map();
+    this.questBoard = [];
   }
-  assignQuest(role: Role) {
+  assignQuest(role: UserRole) {
     const node = this.randomQuest();
     role.executeQuest = node;
     return node;
   }
 
-  async injectQuestData() {
-    const [normal, hard] = await Promise.all([
-      database.getQuestData("normal"),
-      database.getQuestData("hard"),
-    ]);
+  private randomQuest(): QuestNode {
+    const q = Math.ceil(Math.random() * this.questBoard.length) - 1;
+    const node = this.questBoard[q];
+    return node;
+  }
 
-    normal.forEach((quest) => {
-      this.normalQuestMap.set(quest.id, new QuestNode(quest));
-    });
-    hard.forEach((quest) => {
-      this.hardQuestMap.set(quest.id, new QuestNode(quest));
+  injectQuest() {
+    const questBoard = database.readQuestBoard();
+    questBoard.quest.forEach((quest) => {
+      this.questBoard.push(new QuestNode(quest));
     });
   }
 
-  private randomQuest(): QuestNode {
-    if (Math.random() > 0.7) {
-      // hard
-    } else {
-      // normal
-      // const q = Math.ceil(Math.random() * this.normalQuestMap.size);
-      // return Array.from(this.normalQuestMap)[q][1];
-    }
-
-    const q = Math.ceil(Math.random() * this.normalQuestMap.size) - 1;
-    return Array.from(this.normalQuestMap)[q][1];
+  storeQuest() {
+    database.storeQuestBoard(this.questBoard.map((node) => node.toQuest()));
   }
 }
 
 export class QuestNode {
+  readonly id: Quest["id"];
   readonly type: Quest["type"];
-  readonly questId: Quest["id"];
+  readonly questId: Quest["questId"];
   readonly title: Quest["title"];
   readonly desc: Quest["desc"];
   readonly options: Quest["options"];
@@ -52,14 +41,14 @@ export class QuestNode {
   get isAnswered() {
     return this.anser !== undefined;
   }
-
   constructor(config: Quest) {
-    const { title, desc, options, id, type } = config;
-    this.questId = id;
+    const { title, desc, options, questId, type, id } = config;
+    this.questId = questId;
     this.title = title;
     this.desc = desc;
     this.options = options;
     this.type = type;
+    this.id = id;
   }
   onAnswer(id: QuestOptions["ansId"]): boolean {
     if (this.isAnswered) return false;
@@ -73,8 +62,7 @@ export class QuestNode {
 
     return this.isAnswered;
   }
-
-  onRoll(role: Role): boolean {
+  onRoll(role: UserRole): boolean {
     if (this.isAnswered) return false;
 
     if (this.type === "dice") {
@@ -83,5 +71,15 @@ export class QuestNode {
     }
 
     return this.isAnswered;
+  }
+  toQuest(): Quest {
+    return {
+      id: this.id,
+      questId: this.questId,
+      type: this.type,
+      title: this.title,
+      desc: this.desc,
+      options: this.options,
+    };
   }
 }

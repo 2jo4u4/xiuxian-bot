@@ -11,8 +11,9 @@ import {
 } from "../../deps.ts";
 import { CommandCtrl, UserCommand } from "./UserCommand.ts";
 import { Game } from "./Game.ts";
-import { QuestManager } from "./Quest.ts";
+import { QuestManager } from "./QuestManager.ts";
 import { Template } from "./TextTemplate.ts";
+import { database } from "./DataBase.ts";
 
 const symbolCustomId = ", ";
 function createBtnCustomId(...ss: string[]) {
@@ -25,15 +26,13 @@ function splitBtnCustomId(s: string) {
   return s.split(symbolCustomId);
 }
 
-/**
- * @returns 關閉伺服器前執行
- */
-export async function botLoop(): Promise<() => Promise<void>> {
+export async function botLoop() {
   const DiceKey = "!!Dice";
   const commandCtrl = new CommandCtrl();
   const game = new Game();
   const questManager = new QuestManager();
-  questManager.injectQuestData();
+  game.injectUsers();
+  questManager.injectQuest();
 
   const bot = createBot({
     token: Deno.env.get("DISCORDTOKEN") ?? "",
@@ -43,8 +42,6 @@ export async function botLoop(): Promise<() => Promise<void>> {
         console.log("Successfully connected to gateway");
       },
       guildCreate(bot, guild) {
-        game.injectRoleData(guild.id);
-
         const defaultChannel = guild.channels.find(
           (channel) => channel.type === ChannelTypes.GuildText
         );
@@ -107,7 +104,6 @@ export async function botLoop(): Promise<() => Promise<void>> {
                   role.userId.toString(),
                   ansId
                 );
-                console.log({ customId });
                 components.push({
                   type: MessageComponentTypes.Button,
                   label: desc,
@@ -116,6 +112,7 @@ export async function botLoop(): Promise<() => Promise<void>> {
                   disabled,
                 });
               });
+
               const content = Template.questDesc(quest.title, quest.desc, tag);
               bot.helpers.sendMessage(channelId, {
                 content,
@@ -148,6 +145,11 @@ export async function botLoop(): Promise<() => Promise<void>> {
                   : Template.noHasQuest();
               bot.helpers.sendMessage(channelId, { content });
             }
+            break;
+          }
+          case UserCommand.關閉伺服器: {
+            game.storeUser();
+            Deno.exit(0);
             break;
           }
           default: {
@@ -212,8 +214,4 @@ export async function botLoop(): Promise<() => Promise<void>> {
   });
 
   await startBot(bot);
-
-  return async () => {
-    await game.onDestroy();
-  };
 }

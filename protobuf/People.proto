@@ -8,3 +8,34 @@ message Person{
 message People{
     repeated Person people=1;
 }
+
+message Role{
+    int32 id=1;
+    string userId=2;
+    string guildId=3;
+    int32 exp=4;
+    string date=5;
+}
+
+message Users{
+    repeated Role role=1;
+}
+
+message QuestBoard{
+    repeated Quest quest=1;
+}
+
+message Quest{
+    int32 id=1;
+    string questId=2;
+    string type=3;
+    string title=4;
+    string desc=5;
+    repeated QuestOptions options=6;
+}
+
+message QuestOptions{
+    string ansId=1;
+    string desc=2;
+    int32 score=3;
+}

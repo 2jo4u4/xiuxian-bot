@@ -1,70 +1,54 @@
-import { join, existsSync } from "../../deps.ts";
+import { write, read, StorageFilename } from "../../storage/mod.ts";
+import * as UsersTools from "../../definition/messages/Users.ts";
+import * as RoleTools from "../../definition/messages/Role.ts";
+import * as QuestBoardtTools from "../../definition/messages/QuestBoard.ts";
+import * as QuestTools from "../../definition/messages/Quest.ts";
+import * as QuestOptionsTools from "../../definition/messages/QuestOptions.ts";
+import { getLogger } from "jsr:@std/log";
 
-export type RoleJson = Role[];
-export interface Role {
-  userId: string;
-  exp: number;
-  date: string;
-}
-export type QuestJson = Quest[];
-export interface Quest {
-  id: string;
-  type: "multiple" | "dice";
-  title: string;
-  desc: string;
-  options: QuestOptions[];
-}
-export interface QuestOptions {
-  ansId: string;
-  desc: string;
-  score: number;
-}
+export type RoleJson = UsersTools.Type["role"];
+export type QuestJson = QuestBoardtTools.Type["quest"];
+export type Role = RoleTools.Type;
+export type Quest = QuestTools.Type;
 
+export type QuestOptions = QuestOptionsTools.Type;
 class DataBase {
-  readonly rootDir: string;
-  readonly roleDir: string;
-  readonly questDir: string;
+  readonly log: ReturnType<typeof getLogger>;
   constructor() {
-    this.rootDir = Deno.cwd();
-    this.roleDir = "roles";
-    this.questDir = "quest";
-    this.checkRoleDirExist();
+    this.log = getLogger("default");
   }
 
-  private checkRoleDirExist() {
-    const folder = join(this.rootDir, "static", this.roleDir);
-    const isExist = existsSync(folder);
-    !isExist && Deno.mkdirSync(folder);
-  }
-
-  async getRoleData(guildId: string): Promise<RoleJson> {
-    const file = join(this.rootDir, "static", this.roleDir, `${guildId}.json`);
-    const isExistFile = existsSync(file);
-    if (isExistFile) {
-      const decoder = new TextDecoder("utf-8");
-      const data = await Deno.readFile(file);
-      const result = decoder.decode(data);
-      return JSON.parse(result);
-    } else {
-      await Deno.writeTextFile(file, "[]");
-      return [];
+  private checuUserFileExist(filename: StorageFilename) {
+    try {
+      read(filename);
+    } catch (e) {
+      write(filename, new Uint8Array());
+      this.log.debug("Auto Create File");
     }
   }
-  async storeRoleData(guildId: string, json: string) {
-    const file = join(this.rootDir, "static", this.roleDir, `${guildId}.json`);
-    await Deno.writeTextFile(file, json);
+  storeUsers(role: RoleJson) {
+    write(StorageFilename.Users, UsersTools.encodeBinary({ role }));
   }
-  async getQuestData(difficulty: "normal" | "hard"): Promise<QuestJson> {
-    const file = join(
-      this.rootDir,
-      "static",
-      this.questDir,
-      `${difficulty}.json`
+  readUsers() {
+    this.checuUserFileExist(StorageFilename.Users);
+    const file = UsersTools.decodeBinary(read(StorageFilename.Users));
+    return file;
+  }
+
+  storeQuestBoard(quest: QuestJson) {
+    write(
+      StorageFilename.QuestBoard,
+      QuestBoardtTools.encodeBinary({
+        quest,
+      })
     );
-    const decoder = new TextDecoder("utf-8");
-    const data = await Deno.readFile(file);
-    const result = decoder.decode(data);
-    return JSON.parse(result);
+  }
+  readQuestBoard() {
+    this.checuUserFileExist(StorageFilename.QuestBoard);
+    const file = QuestBoardtTools.decodeBinary(
+      read(StorageFilename.QuestBoard)
+    );
+    return file;
   }
 }
 

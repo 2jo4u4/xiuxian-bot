@@ -1,4 +1,5 @@
-import type { QuestNode } from "./Quest.ts";
+import { Role } from "./DataBase.ts";
+import type { QuestNode } from "./QuestManager.ts";
 
 export enum LevelThreshold {
   練氣 = 100,
@@ -7,7 +8,7 @@ export enum LevelThreshold {
   元嬰 = 1200,
 }
 
-export class Role {
+export class UserRole {
   readonly userId: bigint;
   readonly guildId: bigint;
   readonly createDate: string;
@@ -47,10 +48,10 @@ export class Role {
     this.executeQuest = null;
   }
 
-  toJSON() {
+  toRole(): Omit<Role, "id"> {
     return {
-      userId: this.userId,
-      guildId: this.guildId,
+      userId: this.userId.toString(),
+      guildId: this.guildId.toString(),
       exp: this.exp,
       date: this.createDate,
     };

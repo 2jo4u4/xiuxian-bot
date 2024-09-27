@@ -16,12 +16,7 @@ function envWithoutBot() {
   examplePeopleRead();
 }
 function envDevelop() {
-  botLoop().then((destroy) => {
-    Deno.addSignalListener("SIGINT", async () => {
-      await destroy();
-      Deno.exit();
-    });
-  });
+  botLoop();
 }
 function envProduct() {
   botLoop();
