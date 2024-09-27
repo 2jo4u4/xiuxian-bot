@@ -28,6 +28,13 @@ class DataBase {
     this.rootDir = Deno.cwd();
     this.roleDir = "roles";
     this.questDir = "quest";
+    this.checkRoleDirExist();
+  }
+
+  private checkRoleDirExist() {
+    const folder = join(this.rootDir, "static", this.roleDir);
+    const isExist = existsSync(folder);
+    !isExist && Deno.mkdirSync(folder);
   }
 
   async getRoleData(guildId: string): Promise<RoleJson> {
