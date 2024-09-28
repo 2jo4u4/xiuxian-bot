@@ -41,12 +41,11 @@ export class Game {
   }
   injectUsers() {
     const users = database.readUsers();
-    users.role.forEach(({ guildId, userId, exp, date }) => {
+    users.role.forEach(({ guildId, userId, ...other }) => {
       const role = new UserRole({
         userId: BigInt(userId),
         guildId: BigInt(guildId),
-        exp,
-        date,
+        ...other,
       });
       this.addRole(role);
     });
@@ -61,7 +60,8 @@ export class Game {
   private userMap2json(map: Map<bigint, UserRole>) {
     const json: RoleJson = [];
     map.forEach((role) => {
-      json.push({ ...role.toRole(), id: json.length + 1 });
+      const data = role.toRole();
+      json.push({ ...data, id: json.length + 1 });
     });
 
     return json;

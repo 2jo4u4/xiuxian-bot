@@ -42,8 +42,9 @@ export class UserRole {
     guildId: bigint;
     exp?: number;
     date?: string;
+    training?: string;
   }) {
-    const { userId, guildId, exp = 0, date } = status;
+    const { userId, guildId, exp = 0, date, training } = status;
     this.log = getLogger("default");
     this.userId = userId;
     this.guildId = guildId;
@@ -53,6 +54,7 @@ export class UserRole {
       "yyyy-MM-dd HH:mm:ss"
     );
     this.executeQuest = null;
+    this.training = training;
   }
 
   gainExp(exp: number) {
@@ -66,6 +68,7 @@ export class UserRole {
       guildId: this.guildId.toString(),
       exp: this.exp,
       date: this.createDate,
+      training: this.training,
     };
   }
 
@@ -74,11 +77,18 @@ export class UserRole {
   }
 
   overTraining() {
+    const hours = this.sofarTraning();
+    this.gainExp(hours * 5);
+    return hours;
+  }
+
+  sofarTraning() {
     if (this.training !== undefined) {
-      const hours = difference(new Date(this.training), new Date(), {
+      return difference(new Date(this.training), new Date(), {
         units: ["hours"],
       }).hours!;
-      this.gainExp(hours * 5);
+    } else {
+      return 0;
     }
   }
 }

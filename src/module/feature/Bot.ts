@@ -2,7 +2,6 @@ import "jsr:@std/dotenv/load";
 import {
   ButtonComponent,
   ButtonStyles,
-  ChannelTypes,
   createBot,
   Intents,
   InteractionResponseTypes,
@@ -13,7 +12,6 @@ import { CommandCtrl, UserCommand } from "./UserCommand.ts";
 import { Game } from "./Game.ts";
 import { QuestManager } from "./QuestManager.ts";
 import { Template } from "./TextTemplate.ts";
-import { database } from "./DataBase.ts";
 
 const symbolCustomId = ", ";
 function createBtnCustomId(...ss: string[]) {
@@ -74,10 +72,9 @@ export async function botLoop() {
           case UserCommand.狀態: {
             const role = game.getRole(guildId, authorId);
             if (role) {
-              const content = role
-                ? Template.status(tag, role)
-                : Template.noHasRole();
-              bot.helpers.sendMessage(channelId, { content });
+              bot.helpers.sendMessage(channelId, {
+                content: Template.status(tag, role),
+              });
             } else {
               bot.helpers.sendMessage(channelId, {
                 content: Template.noHasRole(),
@@ -87,7 +84,14 @@ export async function botLoop() {
           }
           case UserCommand.接受任務: {
             const role = game.getRole(guildId, authorId);
-            if (role && role.executeQuest === null) {
+            let content = "";
+            if (role === undefined) {
+              content = Template.noHasRole();
+            } else if (role.executeQuest !== null) {
+              content = Template.alreadyHasQuest();
+            } else if (role.duringTraining) {
+              content = Template.duringTraining(role);
+            } else {
               const quest = questManager.assignQuest(role);
 
               const components: ButtonComponent[] = [];
@@ -128,13 +132,11 @@ export async function botLoop() {
                   },
                 ],
               });
-            } else {
-              const content =
-                role === undefined
-                  ? Template.noHasRole()
-                  : Template.alreadyHasQuest();
-              bot.helpers.sendMessage(channelId, { content });
+              return;
             }
+
+            bot.helpers.sendMessage(channelId, { content });
+
             return;
           }
           case UserCommand.取消任務: {
@@ -154,8 +156,12 @@ export async function botLoop() {
           }
           case UserCommand.閉關: {
             const role = game.getRole(guildId, authorId);
-            let content = Template.noHasRole();
-            if (role) {
+            let content = "";
+            if (role === undefined) {
+              content = Template.noHasRole();
+            } else if (role.duringTraining) {
+              content = Template.duringTraining(role);
+            } else {
               role.starTraining();
               content = Template.starTraining(tag);
             }
@@ -164,10 +170,14 @@ export async function botLoop() {
           }
           case UserCommand.閉關結束: {
             const role = game.getRole(guildId, authorId);
-            let content = Template.noHasRole();
-            if (role) {
-              role.overTraining();
-              content = Template.overTraining(tag);
+            let content = "";
+            if (role === undefined) {
+              content = Template.noHasRole();
+            } else if (!role.duringTraining) {
+              content = Template.starTrainingFirst();
+            } else {
+              const hours = role.overTraining();
+              content = Template.overTraining(tag, hours);
             }
             bot.helpers.sendMessage(channelId, { content });
 

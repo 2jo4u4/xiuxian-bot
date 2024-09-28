@@ -24,6 +24,7 @@ export declare namespace $ {
     guildId: string;
     exp: number;
     date: string;
+    training?: string;
   }
 }
 
@@ -36,6 +37,7 @@ export function getDefaultValue(): $.Role {
     guildId: "",
     exp: 0,
     date: "",
+    training: undefined,
   };
 }
 
@@ -53,6 +55,7 @@ export function encodeJson(value: $.Role): unknown {
   if (value.guildId !== undefined) result.guildId = tsValueToJsonValueFns.string(value.guildId);
   if (value.exp !== undefined) result.exp = tsValueToJsonValueFns.int32(value.exp);
   if (value.date !== undefined) result.date = tsValueToJsonValueFns.string(value.date);
+  if (value.training !== undefined) result.training = tsValueToJsonValueFns.string(value.training);
   return result;
 }
 
@@ -63,6 +66,7 @@ export function decodeJson(value: any): $.Role {
   if (value.guildId !== undefined) result.guildId = jsonValueToTsValueFns.string(value.guildId);
   if (value.exp !== undefined) result.exp = jsonValueToTsValueFns.int32(value.exp);
   if (value.date !== undefined) result.date = jsonValueToTsValueFns.string(value.date);
+  if (value.training !== undefined) result.training = jsonValueToTsValueFns.string(value.training);
   return result;
 }
 
@@ -96,6 +100,12 @@ export function encodeBinary(value: $.Role): Uint8Array {
     const tsValue = value.date;
     result.push(
       [5, tsValueToWireValueFns.string(tsValue)],
+    );
+  }
+  if (value.training !== undefined) {
+    const tsValue = value.training;
+    result.push(
+      [6, tsValueToWireValueFns.string(tsValue)],
     );
   }
   return serialize(result);
@@ -139,6 +149,13 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     const value = wireValueToTsValueFns.string(wireValue);
     if (value === undefined) break field;
     result.date = value;
+  }
+  field: {
+    const wireValue = wireFields.get(6);
+    if (wireValue === undefined) break field;
+    const value = wireValueToTsValueFns.string(wireValue);
+    if (value === undefined) break field;
+    result.training = value;
   }
   return result;
 }

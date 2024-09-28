@@ -15,6 +15,7 @@ message Role{
     string guildId=3;
     int32 exp=4;
     string date=5;
+    optional string training = 6;
 }
 
 message Users{

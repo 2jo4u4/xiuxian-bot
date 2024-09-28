@@ -6,8 +6,8 @@ const HelpDesc: Record<string, string> = {
   [UserCommand.狀態]: "查看當前的境界",
   [UserCommand.接受任務]: "接受一個隨機任務",
   [UserCommand.取消任務]: "放棄當前的任務",
-  [UserCommand.閉關]: "掛機獲得經驗值",
-  [UserCommand.閉關結束]: "掛機獲得經驗值",
+  [UserCommand.閉關]: "開始記錄閉關時間，並於結束閉關獲得經驗值",
+  [UserCommand.閉關結束]: "結算閉關時間，並獲得獲得經驗值",
 };
 
 export const Template = {
@@ -119,7 +119,39 @@ export const Template = {
   starTraining(userName: string) {
     return `${userName} 已開始閉關修練`;
   },
-  overTraining(userName: string) {
-    return `${userName} 已完成閉關修練`;
+  starTrainingFirst() {
+    let str = "尚未開始閉關，";
+    str +=
+      "請使用 " +
+      "`" +
+      CommandCtrl.prefix +
+      CommandCtrl.keyword +
+      " " +
+      UserCommand.閉關 +
+      "`";
+    str += " 來開始閉關修練。";
+    return str;
+  },
+  overTraining(userName: string, hours: number) {
+    let str = "```md\n";
+    str += " > " + userName + " 已完成閉關修練\n";
+    str += " > 總共耗時" + hours + "小時";
+    str += "\n```";
+    return str;
+  },
+  duringTraining(role: UserRole) {
+    let str = "```md\n";
+    str += "> 正在閉關中，請先出關 ";
+    str +=
+      "`" +
+      CommandCtrl.prefix +
+      CommandCtrl.keyword +
+      " " +
+      UserCommand.閉關結束 +
+      "`" +
+      "\n";
+    str += "> 目前已修練了 " + role.sofarTraning() + " 小時";
+    str += "\n```";
+    return str;
   },
 };
