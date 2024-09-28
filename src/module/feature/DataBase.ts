@@ -10,19 +10,22 @@ export type RoleJson = UsersTools.Type["role"];
 export type QuestJson = QuestBoardtTools.Type["quest"];
 export type Role = RoleTools.Type;
 export type Quest = QuestTools.Type;
-
 export type QuestOptions = QuestOptionsTools.Type;
+
 class DataBase {
   readonly log: ReturnType<typeof getLogger>;
   constructor() {
     this.log = getLogger("default");
+    this.checkFileExist(StorageFilename.Users);
+    this.checkFileExist(StorageFilename.QuestBoard);
   }
 
-  private checuUserFileExist(filename: StorageFilename) {
+  private checkFileExist(filename: StorageFilename) {
     try {
       read(filename);
     } catch (e) {
       write(filename, new Uint8Array());
+      this.log.debug(e);
       this.log.debug("Auto Create File");
     }
   }
@@ -30,7 +33,6 @@ class DataBase {
     write(StorageFilename.Users, UsersTools.encodeBinary({ role }));
   }
   readUsers() {
-    this.checuUserFileExist(StorageFilename.Users);
     const file = UsersTools.decodeBinary(read(StorageFilename.Users));
     return file;
   }
@@ -44,7 +46,6 @@ class DataBase {
     );
   }
   readQuestBoard() {
-    this.checuUserFileExist(StorageFilename.QuestBoard);
     const file = QuestBoardtTools.decodeBinary(
       read(StorageFilename.QuestBoard)
     );

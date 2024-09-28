@@ -1,10 +1,13 @@
+import { difference } from "../../deps.ts";
 import { CommandCtrl, UserCommand, CommandAlais } from "./UserCommand.ts";
-
+import type { UserRole } from "./UserRole.ts";
 const HelpDesc: Record<string, string> = {
   [UserCommand.建立角色]: "創建你的修仙角色",
   [UserCommand.狀態]: "查看當前的境界",
   [UserCommand.接受任務]: "接受一個隨機任務",
   [UserCommand.取消任務]: "放棄當前的任務",
+  [UserCommand.閉關]: "掛機獲得經驗值",
+  [UserCommand.閉關結束]: "掛機獲得經驗值",
 };
 
 export const Template = {
@@ -55,8 +58,19 @@ export const Template = {
   createRole(userName: string) {
     return `天道之下，又逢一位欲逆天改命之人。${userName}。`;
   },
-  status(userName: string, level: string) {
-    const str = userName + " 目前的境界為" + "`" + level + "`" + "。";
+  status(userName: string, role: UserRole) {
+    let str = "```md\n";
+    str += userName + " 的修仙之路\n";
+    str += "> 目前境界 " + role.level.text + "\n";
+    str +=
+      "> 總共修行了 " +
+      difference(new Date(role.createDate), new Date(), { units: ["days"] })
+        .days! +
+      " 天\n";
+    if (role.duringTraining) {
+      str += "目前正在閉關中\n";
+    }
+    str += "```";
     return str;
   },
   questDesc(title: string, desc: string, userName?: string) {
@@ -101,5 +115,11 @@ export const Template = {
   },
   unknownError() {
     return "未知的錯誤";
+  },
+  starTraining(userName: string) {
+    return `${userName} 已開始閉關修練`;
+  },
+  overTraining(userName: string) {
+    return `${userName} 已完成閉關修練`;
   },
 };

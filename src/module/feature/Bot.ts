@@ -41,15 +41,15 @@ export async function botLoop() {
       ready() {
         console.log("Successfully connected to gateway");
       },
-      guildCreate(bot, guild) {
-        const defaultChannel = guild.channels.find(
-          (channel) => channel.type === ChannelTypes.GuildText
-        );
-        if (defaultChannel) {
-          const content = Template.sayHi();
-          bot.helpers.sendMessage(defaultChannel.id, { content });
-        }
-      },
+      // guildCreate(bot, guild) {
+      //   const defaultChannel = guild.channels.find(
+      //     (channel) => channel.type === ChannelTypes.GuildText
+      //   );
+      //   if (defaultChannel) {
+      //     const content = Template.sayHi();
+      //     bot.helpers.sendMessage(defaultChannel.id, { content });
+      //   }
+      // },
       messageCreate(bot, message) {
         if (message.isFromBot || message.guildId === undefined) return;
 
@@ -57,31 +57,30 @@ export async function botLoop() {
         if (isCommand === null) return;
         const { command } = isCommand;
         const { guildId, authorId, channelId, tag } = message;
+        console.log({ guildId });
+        const role = game.createRole(guildId, authorId);
 
         switch (command) {
           case UserCommand.幫助: {
             const content = Template.help();
             bot.helpers.sendMessage(channelId, { content });
-            break;
+            return;
           }
           case UserCommand.建立角色: {
-            const role = game.createRole(guildId, authorId);
             game.addRole(role);
             const content = Template.createRole(tag);
             bot.helpers.sendMessage(channelId, { content });
-            break;
+            return;
           }
           case UserCommand.狀態: {
-            const role = game.getRole(guildId, authorId);
             const content = role
-              ? Template.status(tag, role.level.text)
+              ? Template.status(tag, role)
               : Template.noHasRole();
             bot.helpers.sendMessage(channelId, { content });
 
-            break;
+            return;
           }
           case UserCommand.接受任務: {
-            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest === null) {
               const quest = questManager.assignQuest(role);
 
@@ -130,10 +129,9 @@ export async function botLoop() {
                   : Template.alreadyHasQuest();
               bot.helpers.sendMessage(channelId, { content });
             }
-            break;
+            return;
           }
           case UserCommand.取消任務: {
-            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest !== null) {
               const content = Template.giveupQuest(role.executeQuest.title);
               bot.helpers.sendMessage(channelId, { content });
@@ -145,17 +143,37 @@ export async function botLoop() {
                   : Template.noHasQuest();
               bot.helpers.sendMessage(channelId, { content });
             }
-            break;
+            return;
+          }
+          case UserCommand.閉關: {
+            role.starTraining();
+
+            bot.helpers.sendMessage(channelId, {
+              content: Template.starTraining(tag),
+            });
+
+            return;
+          }
+          case UserCommand.閉關結束: {
+            role.overTraining();
+            bot.helpers.sendMessage(channelId, {
+              content: Template.overTraining(tag),
+            });
+
+            return;
+          }
+          case UserCommand.保存所有使用者: {
+            game.storeUser();
+            return;
           }
           case UserCommand.關閉伺服器: {
             game.storeUser();
-            Deno.exit(0);
-            break;
+            return Deno.exit(0);
           }
           default: {
             const content = Template.unavailableCommand();
             bot.helpers.sendMessage(channelId, { content });
-            break;
+            return;
           }
         }
       },
@@ -175,9 +193,11 @@ export async function botLoop() {
           );
           return;
         }
-        const [_userid, customId] = splitBtnCustomId(interaction.data.customId);
 
+        const [_userid, customId] = splitBtnCustomId(interaction.data.customId);
         const userid = BigInt(_userid);
+        console.log(interaction.guildId);
+
         const role = game.getRole(interaction.guildId, userid);
         if (role === undefined || role.executeQuest === null) {
           bot.helpers.sendInteractionResponse(

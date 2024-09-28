@@ -1,3 +1,5 @@
+import { getLogger } from "@std/log";
+import { format, difference } from "../../deps.ts";
 import { Role } from "./DataBase.ts";
 import type { QuestNode } from "./QuestManager.ts";
 
@@ -12,7 +14,13 @@ export class UserRole {
   readonly userId: bigint;
   readonly guildId: bigint;
   readonly createDate: string;
-  exp: number;
+  private exp: number;
+  private training?: string;
+  readonly log: ReturnType<typeof getLogger>;
+
+  get duringTraining() {
+    return this.training !== undefined;
+  }
 
   executeQuest: QuestNode | null;
   get level() {
@@ -36,10 +44,14 @@ export class UserRole {
     date?: string;
   }) {
     const { userId, guildId, exp = 0, date } = status;
+    this.log = getLogger("default");
     this.userId = userId;
     this.guildId = guildId;
     this.exp = exp;
-    this.createDate = date ?? new Date().toDateString();
+    this.createDate = format(
+      new Date(date ?? new Date()),
+      "yyyy-MM-dd HH:mm:ss"
+    );
     this.executeQuest = null;
   }
 
@@ -55,5 +67,18 @@ export class UserRole {
       exp: this.exp,
       date: this.createDate,
     };
+  }
+
+  starTraining() {
+    this.training = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+  }
+
+  overTraining() {
+    if (this.training !== undefined) {
+      const hours = difference(new Date(this.training), new Date(), {
+        units: ["hours"],
+      }).hours!;
+      this.gainExp(hours * 5);
+    }
   }
 }
