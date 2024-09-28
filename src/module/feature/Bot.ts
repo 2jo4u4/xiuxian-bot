@@ -57,8 +57,6 @@ export async function botLoop() {
         if (isCommand === null) return;
         const { command } = isCommand;
         const { guildId, authorId, channelId, tag } = message;
-        console.log({ guildId });
-        const role = game.createRole(guildId, authorId);
 
         switch (command) {
           case UserCommand.幫助: {
@@ -67,20 +65,28 @@ export async function botLoop() {
             return;
           }
           case UserCommand.建立角色: {
+            const role = game.createRole(guildId, authorId);
             game.addRole(role);
             const content = Template.createRole(tag);
             bot.helpers.sendMessage(channelId, { content });
             return;
           }
           case UserCommand.狀態: {
-            const content = role
-              ? Template.status(tag, role)
-              : Template.noHasRole();
-            bot.helpers.sendMessage(channelId, { content });
-
+            const role = game.getRole(guildId, authorId);
+            if (role) {
+              const content = role
+                ? Template.status(tag, role)
+                : Template.noHasRole();
+              bot.helpers.sendMessage(channelId, { content });
+            } else {
+              bot.helpers.sendMessage(channelId, {
+                content: Template.noHasRole(),
+              });
+            }
             return;
           }
           case UserCommand.接受任務: {
+            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest === null) {
               const quest = questManager.assignQuest(role);
 
@@ -132,6 +138,7 @@ export async function botLoop() {
             return;
           }
           case UserCommand.取消任務: {
+            const role = game.getRole(guildId, authorId);
             if (role && role.executeQuest !== null) {
               const content = Template.giveupQuest(role.executeQuest.title);
               bot.helpers.sendMessage(channelId, { content });
@@ -146,19 +153,23 @@ export async function botLoop() {
             return;
           }
           case UserCommand.閉關: {
-            role.starTraining();
-
-            bot.helpers.sendMessage(channelId, {
-              content: Template.starTraining(tag),
-            });
-
+            const role = game.getRole(guildId, authorId);
+            let content = Template.noHasRole();
+            if (role) {
+              role.starTraining();
+              content = Template.starTraining(tag);
+            }
+            bot.helpers.sendMessage(channelId, { content });
             return;
           }
           case UserCommand.閉關結束: {
-            role.overTraining();
-            bot.helpers.sendMessage(channelId, {
-              content: Template.overTraining(tag),
-            });
+            const role = game.getRole(guildId, authorId);
+            let content = Template.noHasRole();
+            if (role) {
+              role.overTraining();
+              content = Template.overTraining(tag);
+            }
+            bot.helpers.sendMessage(channelId, { content });
 
             return;
           }
@@ -196,39 +207,36 @@ export async function botLoop() {
 
         const [_userid, customId] = splitBtnCustomId(interaction.data.customId);
         const userid = BigInt(_userid);
-        console.log(interaction.guildId);
-
-        const role = game.getRole(interaction.guildId, userid);
-        if (role === undefined || role.executeQuest === null) {
-          bot.helpers.sendInteractionResponse(
-            interaction.id,
-            interaction.token,
-            {
-              type: InteractionResponseTypes.ChannelMessageWithSource,
-              data: { content: Template.incorrectUser() },
+        if (interaction.user.id === userid) {
+          const role = game.getRole(interaction.guildId, userid);
+          if (role !== undefined && role.executeQuest !== null) {
+            if (customId === DiceKey) {
+              role.executeQuest.onRoll(role);
+            } else {
+              role.executeQuest.onAnswer(customId);
             }
-          );
-        } else {
-          if (customId === DiceKey) {
-            role.executeQuest.onRoll(role);
-          } else {
-            role.executeQuest.onAnswer(customId);
-          }
-          if (role.executeQuest.anser) {
-            bot.helpers.deleteMessage(
-              interaction.channelId!,
-              interaction.message!.id
-            );
-            bot.helpers.sendMessage(interaction.channelId!, {
-              content: Template.chooseQuestOption(
-                role.executeQuest.title,
-                role.executeQuest.desc,
-                role.executeQuest.anser!.desc
-              ),
-            });
-            role.gainExp(role.executeQuest.anser.score);
+            if (role.executeQuest.anser) {
+              bot.helpers.deleteMessage(
+                interaction.channelId!,
+                interaction.message!.id
+              );
+              bot.helpers.sendMessage(interaction.channelId!, {
+                content: Template.chooseQuestOption(
+                  role.executeQuest.title,
+                  role.executeQuest.desc,
+                  role.executeQuest.anser!.desc
+                ),
+              });
+              role.gainExp(role.executeQuest.anser.score);
+
+              return;
+            }
           }
         }
+        bot.helpers.sendInteractionResponse(interaction.id, interaction.token, {
+          type: InteractionResponseTypes.ChannelMessageWithSource,
+          data: { content: Template.incorrectUser() },
+        });
       },
     },
   });
