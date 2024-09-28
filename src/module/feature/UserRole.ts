@@ -79,6 +79,7 @@ export class UserRole {
   overTraining() {
     const hours = this.sofarTraning();
     this.gainExp(hours * 5);
+    this.training = undefined;
     return hours;
   }
 
