@@ -14,6 +14,15 @@ export enum LevelThreshold {
   大乘 = 100000,
 }
 
+// 靈根
+export enum SpiritRootType {
+  金靈根,
+  木靈根,
+  水靈根,
+  火靈根,
+  土靈根,
+}
+
 export class UserRole {
   readonly userId: bigint;
   readonly guildId: bigint;
@@ -23,9 +32,8 @@ export class UserRole {
   readonly log: ReturnType<typeof getLogger>;
   // 新增屬性
   spiritRoot: string; // 靈根（金/木/水/火/土）
-  constitution: string; // 體質
   reputation: number; // 名聲
-  resources: number; // 資源
+  resources: number; // 靈石數量
 
   get duringTraining() {
     return this.training !== undefined;
@@ -34,6 +42,14 @@ export class UserRole {
   executeQuest: QuestNode | null;
   get level() {
     switch (true) {
+      case this.exp > LevelThreshold.大乘:
+        return { text: "渡劫境", priority: Math.pow(10, 20) };
+      case this.exp > LevelThreshold.合體:
+        return { text: "大乘境", priority: Math.pow(10, 16) };
+      case this.exp > LevelThreshold.煉虛:
+        return { text: "合體境", priority: Math.pow(10, 13) };
+      case this.exp > LevelThreshold.化神:
+        return { text: "煉虛境", priority: Math.pow(10, 10) };
       case this.exp > LevelThreshold.元嬰:
         return { text: "化神境", priority: Math.pow(10, 7) };
       case this.exp > LevelThreshold.金丹:
@@ -52,10 +68,9 @@ export class UserRole {
     exp?: number;
     date?: string;
     training?: string;
-    spiritRoot?: string;
-    constitution?: string;
-    reputation?: number;
-    resources?: number;
+    spiritRoot?: string; // 靈根（金/木/水/火/土）
+    reputation?: number; // 名聲
+    resources?: number; // 靈石數量
   }) {
     const {
       userId,
@@ -64,7 +79,6 @@ export class UserRole {
       date,
       training,
       spiritRoot,
-      constitution,
       reputation,
       resources,
     } = status;
@@ -80,7 +94,6 @@ export class UserRole {
     this.training = training;
     // 新增屬性初始化
     this.spiritRoot = spiritRoot ?? UserRole.randomSpiritRoot();
-    this.constitution = constitution ?? "普通";
     this.reputation = reputation ?? 0;
     this.resources = resources ?? 0;
   }
@@ -103,7 +116,6 @@ export class UserRole {
       date: this.createDate,
       training: this.training,
       spiritRoot: this.spiritRoot,
-      constitution: this.constitution,
       reputation: this.reputation,
       resources: this.resources,
     };

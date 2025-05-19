@@ -20,7 +20,6 @@ export declare namespace $ {
     date: string;
     training?: string;
     spiritRoot?: string; // 新增
-    constitution?: string; // 新增
     reputation?: number; // 新增
     resources?: number; // 新增
   };
@@ -37,7 +36,6 @@ export function getDefaultValue(): $.Role {
     date: "",
     training: undefined,
     spiritRoot: "普通",
-    constitution: "普通",
     reputation: 0,
     resources: 0,
   };
@@ -65,8 +63,6 @@ export function encodeJson(value: $.Role): unknown {
     result.training = tsValueToJsonValueFns.string(value.training);
   if (value.spiritRoot !== undefined)
     result.spiritRoot = tsValueToJsonValueFns.string(value.spiritRoot);
-  if (value.constitution !== undefined)
-    result.constitution = tsValueToJsonValueFns.string(value.constitution);
   if (value.reputation !== undefined)
     result.reputation = tsValueToJsonValueFns.int32(value.reputation);
   if (value.resources !== undefined)
@@ -89,8 +85,6 @@ export function decodeJson(value: Record<string, unknown>): $.Role {
     result.training = jsonValueToTsValueFns.string(value.training);
   if (value.spiritRoot !== undefined)
     result.spiritRoot = jsonValueToTsValueFns.string(value.spiritRoot);
-  if (value.constitution !== undefined)
-    result.constitution = jsonValueToTsValueFns.string(value.constitution);
   if (value.reputation !== undefined)
     result.reputation = jsonValueToTsValueFns.int32(value.reputation);
   if (value.resources !== undefined)
@@ -127,10 +121,6 @@ export function encodeBinary(value: $.Role): Uint8Array {
   if (value.spiritRoot !== undefined) {
     const tsValue = value.spiritRoot;
     result.push([7, tsValueToWireValueFns.string(tsValue)]);
-  }
-  if (value.constitution !== undefined) {
-    const tsValue = value.constitution;
-    result.push([8, tsValueToWireValueFns.string(tsValue)]);
   }
   if (value.reputation !== undefined) {
     const tsValue = value.reputation;
@@ -195,13 +185,6 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     const value = wireValueToTsValueFns.string(wireValue);
     if (value === undefined) break field;
     result.spiritRoot = value;
-  }
-  field: {
-    const wireValue = wireFields.get(8);
-    if (wireValue === undefined) break field;
-    const value = wireValueToTsValueFns.string(wireValue);
-    if (value === undefined) break field;
-    result.constitution = value;
   }
   field: {
     const wireValue = wireFields.get(9);

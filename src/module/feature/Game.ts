@@ -29,7 +29,6 @@ export class Game {
   createRole(guildId: GuildId, userId: UserId) {
     const role = this.getRole(guildId, userId);
     if (role) return role;
-    // 建立角色時可進一步自訂 constitution, reputation, resources
     return new UserRole({ userId, guildId });
   }
   addRole(role: UserRole) {
@@ -43,20 +42,11 @@ export class Game {
   injectUsers() {
     const users = database.readUsers();
     users.role.forEach(
-      ({
-        guildId,
-        userId,
-        spiritRoot,
-        constitution,
-        reputation,
-        resources,
-        ...other
-      }) => {
+      ({ guildId, userId, spiritRoot, reputation, resources, ...other }) => {
         const role = new UserRole({
           userId: BigInt(userId),
           guildId: BigInt(guildId),
           spiritRoot,
-          constitution,
           reputation,
           resources,
           ...other,
