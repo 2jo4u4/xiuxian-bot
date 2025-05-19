@@ -42,11 +42,11 @@ export class Game {
   injectUsers() {
     const users = database.readUsers();
     users.role.forEach(
-      ({ guildId, userId, spiritRoot, reputation, resources, ...other }) => {
+      ({ guildId, userId, spiritRoots, reputation, resources, ...other }) => {
         const role = new UserRole({
           userId: BigInt(userId),
           guildId: BigInt(guildId),
-          spiritRoot,
+          spiritRoots,
           reputation,
           resources,
           ...other,

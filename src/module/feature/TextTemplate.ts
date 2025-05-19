@@ -62,7 +62,26 @@ export const Template = {
     let str = "```md\n";
     str += userName + " 的修仙之路\n";
     str += "> 目前境界 " + role.level.text + "\n";
-    str += "> 靈根：" + role.spiritRoot + "\n";
+    // 顯示複數靈根
+    const rootNames = (role.spiritRoots || [])
+      .map((r) => {
+        switch (r) {
+          case 0:
+            return "金";
+          case 1:
+            return "木";
+          case 2:
+            return "水";
+          case 3:
+            return "火";
+          case 4:
+            return "土";
+          default:
+            return "未知";
+        }
+      })
+      .join("");
+    str += "> 靈根：" + rootNames + "靈根\n";
     str += "> 名聲：" + role.reputation + "\n";
     str += "> 資源：" + role.resources + "\n";
     str +=

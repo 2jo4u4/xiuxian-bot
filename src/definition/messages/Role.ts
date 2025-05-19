@@ -19,9 +19,9 @@ export declare namespace $ {
     exp: number;
     date: string;
     training?: string;
-    spiritRoot?: string; // 新增
-    reputation?: number; // 新增
-    resources?: number; // 新增
+    spiritRoots?: number[]; // SpiritRootType[] 的數字陣列
+    reputation?: number;
+    resources?: number;
   };
 }
 
@@ -35,7 +35,7 @@ export function getDefaultValue(): $.Role {
     exp: 0,
     date: "",
     training: undefined,
-    spiritRoot: "普通",
+    spiritRoots: [],
     reputation: 0,
     resources: 0,
   };
@@ -61,8 +61,7 @@ export function encodeJson(value: $.Role): unknown {
     result.date = tsValueToJsonValueFns.string(value.date);
   if (value.training !== undefined)
     result.training = tsValueToJsonValueFns.string(value.training);
-  if (value.spiritRoot !== undefined)
-    result.spiritRoot = tsValueToJsonValueFns.string(value.spiritRoot);
+  if (value.spiritRoots !== undefined) result.spiritRoots = value.spiritRoots;
   if (value.reputation !== undefined)
     result.reputation = tsValueToJsonValueFns.int32(value.reputation);
   if (value.resources !== undefined)
@@ -83,8 +82,8 @@ export function decodeJson(value: Record<string, unknown>): $.Role {
     result.date = jsonValueToTsValueFns.string(value.date);
   if (value.training !== undefined)
     result.training = jsonValueToTsValueFns.string(value.training);
-  if (value.spiritRoot !== undefined)
-    result.spiritRoot = jsonValueToTsValueFns.string(value.spiritRoot);
+  if (value.spiritRoots !== undefined && Array.isArray(value.spiritRoots))
+    result.spiritRoots = value.spiritRoots as number[];
   if (value.reputation !== undefined)
     result.reputation = jsonValueToTsValueFns.int32(value.reputation);
   if (value.resources !== undefined)
@@ -118,17 +117,18 @@ export function encodeBinary(value: $.Role): Uint8Array {
     const tsValue = value.training;
     result.push([6, tsValueToWireValueFns.string(tsValue)]);
   }
-  if (value.spiritRoot !== undefined) {
-    const tsValue = value.spiritRoot;
-    result.push([7, tsValueToWireValueFns.string(tsValue)]);
+  if (value.spiritRoots !== undefined) {
+    for (const v of value.spiritRoots) {
+      result.push([7, tsValueToWireValueFns.int32(v)]);
+    }
   }
   if (value.reputation !== undefined) {
     const tsValue = value.reputation;
-    result.push([9, tsValueToWireValueFns.int32(tsValue)]);
+    result.push([8, tsValueToWireValueFns.int32(tsValue)]);
   }
   if (value.resources !== undefined) {
     const tsValue = value.resources;
-    result.push([10, tsValueToWireValueFns.int32(tsValue)]);
+    result.push([9, tsValueToWireValueFns.int32(tsValue)]);
   }
   return serialize(result);
 }
@@ -179,22 +179,22 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     if (value === undefined) break field;
     result.training = value;
   }
-  field: {
-    const wireValue = wireFields.get(7);
-    if (wireValue === undefined) break field;
-    const value = wireValueToTsValueFns.string(wireValue);
-    if (value === undefined) break field;
-    result.spiritRoot = value;
+  // repeated int32 spiritRoots = 7;
+  for (const [fieldNo, wireValue] of wireFields) {
+    if (fieldNo === 7) {
+      const value = wireValueToTsValueFns.int32(wireValue);
+      if (value !== undefined) result.spiritRoots.push(value);
+    }
   }
   field: {
-    const wireValue = wireFields.get(9);
+    const wireValue = wireFields.get(8);
     if (wireValue === undefined) break field;
     const value = wireValueToTsValueFns.int32(wireValue);
     if (value === undefined) break field;
     result.reputation = value;
   }
   field: {
-    const wireValue = wireFields.get(10);
+    const wireValue = wireFields.get(9);
     if (wireValue === undefined) break field;
     const value = wireValueToTsValueFns.int32(wireValue);
     if (value === undefined) break field;

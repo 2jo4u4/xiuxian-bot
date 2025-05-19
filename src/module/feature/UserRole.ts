@@ -31,7 +31,7 @@ export class UserRole {
   private training?: string;
   readonly log: ReturnType<typeof getLogger>;
   // 新增屬性
-  spiritRoot: string; // 靈根（金/木/水/火/土）
+  spiritRoots: SpiritRootType[]; // 支援複數靈根
   reputation: number; // 名聲
   resources: number; // 靈石數量
 
@@ -68,7 +68,7 @@ export class UserRole {
     exp?: number;
     date?: string;
     training?: string;
-    spiritRoot?: string; // 靈根（金/木/水/火/土）
+    spiritRoots?: SpiritRootType[]; // 支援複數靈根
     reputation?: number; // 名聲
     resources?: number; // 靈石數量
   }) {
@@ -78,7 +78,7 @@ export class UserRole {
       exp = 0,
       date,
       training,
-      spiritRoot,
+      spiritRoots,
       reputation,
       resources,
     } = status;
@@ -93,14 +93,23 @@ export class UserRole {
     this.executeQuest = null;
     this.training = training;
     // 新增屬性初始化
-    this.spiritRoot = spiritRoot ?? UserRole.randomSpiritRoot();
+    this.spiritRoots = spiritRoots ?? UserRole.randomSpiritRoots();
     this.reputation = reputation ?? 0;
     this.resources = resources ?? 0;
   }
-  // 隨機分配靈根
-  static randomSpiritRoot(): string {
-    const roots = ["金", "木", "水", "火", "土"];
-    return roots[Math.floor(Math.random() * roots.length)];
+  // 隨機分配複數靈根
+  static randomSpiritRoots(): SpiritRootType[] {
+    const allRoots = [
+      SpiritRootType.金靈根,
+      SpiritRootType.木靈根,
+      SpiritRootType.水靈根,
+      SpiritRootType.火靈根,
+      SpiritRootType.土靈根,
+    ];
+    // 隨機決定有幾種靈根（1~5）
+    const count = Math.floor(Math.random() * 5) + 1;
+    // 隨機選出 count 個不重複的靈根
+    return allRoots.sort(() => 0.5 - Math.random()).slice(0, count);
   }
 
   gainExp(exp: number) {
@@ -115,7 +124,7 @@ export class UserRole {
       exp: this.exp,
       date: this.createDate,
       training: this.training,
-      spiritRoot: this.spiritRoot,
+      spiritRoots: this.spiritRoots.map((root) => root as number),
       reputation: this.reputation,
       resources: this.resources,
     };

@@ -16,10 +16,9 @@ message Role{
     int32 exp=4;
     string date=5;
     optional string training = 6;
-    string spiritRoot = 7; // 靈根（金/木/水/火/土）
-    string constitution = 8; // 體質
-    int32 reputation = 9; // 名聲
-    int32 resources = 10; // 資源
+    repeated int32 spiritRoots = 7; // 複數靈根，對應 SpiritRootType enum
+    int32 reputation = 8; // 名聲
+    int32 resources = 9; // 資源
 }
 
 message Users{
