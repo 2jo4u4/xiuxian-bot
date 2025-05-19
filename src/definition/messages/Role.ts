@@ -3,7 +3,7 @@ import {
   tsValueToJsonValueFns,
   jsonValueToTsValueFns,
 } from "../runtime/json/scalar.ts";
-import { WireMessage } from "../runtime/wire/index.ts";
+import { WireMessage, WireType } from "../runtime/wire/index.ts";
 import { default as serialize } from "../runtime/wire/serialize.ts";
 import {
   tsValueToWireValueFns,
@@ -22,6 +22,8 @@ export declare namespace $ {
     spiritRoots?: number[]; // SpiritRootType[] 的數字陣列
     reputation?: number;
     resources?: number;
+    backpack?: string[]; // 新增：背包道具ID陣列
+    equipment?: Record<string, string | null>; // 新增：裝備欄，key為部位，value為道具ID或null
   };
 }
 
@@ -38,6 +40,8 @@ export function getDefaultValue(): $.Role {
     spiritRoots: [],
     reputation: 0,
     resources: 0,
+    backpack: [],
+    equipment: {},
   };
 }
 
@@ -45,6 +49,8 @@ export function createValue(partialValue: Partial<$.Role>): $.Role {
   return {
     ...getDefaultValue(),
     ...partialValue,
+    backpack: partialValue.backpack ?? [],
+    equipment: partialValue.equipment ?? {},
   };
 }
 
@@ -66,28 +72,54 @@ export function encodeJson(value: $.Role): unknown {
     result.reputation = tsValueToJsonValueFns.int32(value.reputation);
   if (value.resources !== undefined)
     result.resources = tsValueToJsonValueFns.int32(value.resources);
+  if (value.backpack !== undefined)
+    result.backpack = value.backpack.map(tsValueToJsonValueFns.string);
+  if (value.equipment !== undefined) {
+    result.equipment = {};
+    for (const [k, v] of Object.entries(value.equipment)) {
+      result.equipment[k] = v ?? "";
+    }
+  }
   return result;
 }
 
-export function decodeJson(value: Record<string, unknown>): $.Role {
+export function decodeJson(value: unknown): $.Role {
   const result = getDefaultValue();
-  if (value.id !== undefined) result.id = jsonValueToTsValueFns.int32(value.id);
-  if (value.userId !== undefined)
-    result.userId = jsonValueToTsValueFns.string(value.userId);
-  if (value.guildId !== undefined)
-    result.guildId = jsonValueToTsValueFns.string(value.guildId);
-  if (value.exp !== undefined)
-    result.exp = jsonValueToTsValueFns.int32(value.exp);
-  if (value.date !== undefined)
-    result.date = jsonValueToTsValueFns.string(value.date);
-  if (value.training !== undefined)
-    result.training = jsonValueToTsValueFns.string(value.training);
-  if (value.spiritRoots !== undefined && Array.isArray(value.spiritRoots))
-    result.spiritRoots = value.spiritRoots as number[];
-  if (value.reputation !== undefined)
-    result.reputation = jsonValueToTsValueFns.int32(value.reputation);
-  if (value.resources !== undefined)
-    result.resources = jsonValueToTsValueFns.int32(value.resources);
+  const obj = value as Record<string, unknown>;
+  if (obj.id !== undefined) result.id = jsonValueToTsValueFns.int32(obj.id);
+  if (obj.userId !== undefined)
+    result.userId = jsonValueToTsValueFns.string(obj.userId);
+  if (obj.guildId !== undefined)
+    result.guildId = jsonValueToTsValueFns.string(obj.guildId);
+  if (obj.exp !== undefined) result.exp = jsonValueToTsValueFns.int32(obj.exp);
+  if (obj.date !== undefined)
+    result.date = jsonValueToTsValueFns.string(obj.date);
+  if (obj.training !== undefined)
+    result.training = jsonValueToTsValueFns.string(obj.training);
+  if (obj.spiritRoots !== undefined && Array.isArray(obj.spiritRoots))
+    result.spiritRoots = (obj.spiritRoots as unknown[]).map(
+      jsonValueToTsValueFns.int32
+    );
+  if (obj.reputation !== undefined)
+    result.reputation = jsonValueToTsValueFns.int32(obj.reputation);
+  if (obj.resources !== undefined)
+    result.resources = jsonValueToTsValueFns.int32(obj.resources);
+  if (obj.backpack !== undefined && Array.isArray(obj.backpack))
+    result.backpack = (obj.backpack as unknown[]).map(
+      jsonValueToTsValueFns.string
+    );
+  if (
+    obj.equipment !== undefined &&
+    typeof obj.equipment === "object" &&
+    obj.equipment !== null
+  ) {
+    result.equipment = {};
+    for (const [k, v] of Object.entries(
+      obj.equipment as Record<string, unknown>
+    )) {
+      result.equipment[k] = v === "" ? null : jsonValueToTsValueFns.string(v);
+    }
+  }
   return result;
 }
 
@@ -130,7 +162,34 @@ export function encodeBinary(value: $.Role): Uint8Array {
     const tsValue = value.resources;
     result.push([9, tsValueToWireValueFns.int32(tsValue)]);
   }
+  if (value.backpack !== undefined) {
+    for (const v of value.backpack) {
+      result.push([10, tsValueToWireValueFns.string(v)]);
+    }
+  }
+  if (value.equipment !== undefined) {
+    for (const [k, v] of Object.entries(value.equipment)) {
+      result.push([
+        11,
+        {
+          type: WireType.LengthDelimited as const,
+          value: serializeEquipmentEntry(k, v),
+        },
+      ]);
+    }
+  }
   return serialize(result);
+}
+
+function serializeEquipmentEntry(
+  key: string,
+  value: string | null
+): Uint8Array {
+  // map<string, string> => message EquipmentEntry { string key = 1; string value = 2; }
+  const entry: WireMessage = [];
+  entry.push([1, tsValueToWireValueFns.string(key)]);
+  entry.push([2, tsValueToWireValueFns.string(value ?? "")]);
+  return serialize(entry);
 }
 
 export function decodeBinary(binary: Uint8Array): $.Role {
@@ -180,10 +239,18 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     result.training = value;
   }
   // repeated int32 spiritRoots = 7;
-  for (const [fieldNo, wireValue] of wireFields) {
+  for (const [fieldNo, wireValue] of wireMessage) {
     if (fieldNo === 7) {
       const value = wireValueToTsValueFns.int32(wireValue);
       if (value !== undefined) result.spiritRoots.push(value);
+    }
+    if (fieldNo === 10) {
+      const value = wireValueToTsValueFns.string(wireValue);
+      if (value !== undefined) result.backpack.push(value);
+    }
+    if (fieldNo === 11 && wireValue.type === WireType.LengthDelimited) {
+      const entry = deserializeEquipmentEntry(wireValue.value);
+      if (entry) result.equipment[entry.key] = entry.value;
     }
   }
   field: {
@@ -201,4 +268,18 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     result.resources = value;
   }
   return result;
+}
+
+function deserializeEquipmentEntry(
+  binary: Uint8Array
+): { key: string; value: string | null } | null {
+  // message EquipmentEntry { string key = 1; string value = 2; }
+  const wireMessage = deserialize(binary);
+  let key = "";
+  let value: string | null = null;
+  for (const [fieldNo, wireValue] of wireMessage) {
+    if (fieldNo === 1) key = wireValueToTsValueFns.string(wireValue);
+    if (fieldNo === 2) value = wireValueToTsValueFns.string(wireValue);
+  }
+  return key ? { key, value } : null;
 }

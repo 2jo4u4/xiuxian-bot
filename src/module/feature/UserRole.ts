@@ -3,6 +3,7 @@ import { format, difference } from "../../deps.ts";
 import { Role } from "./DataBase.ts";
 import type { QuestNode } from "./QuestManager.ts";
 import { LevelName, SpiritRootType } from "./Constants.ts";
+import { getItemById, ItemDefinition } from "./ItemDefinitions.ts";
 
 export class UserRole {
   readonly userId: bigint;
@@ -15,6 +16,8 @@ export class UserRole {
   spiritRoots: SpiritRootType[]; // 支援複數靈根
   reputation: number; // 名聲
   resources: number; // 靈石數量
+  backpack: string[]; // 背包，存放道具名稱
+  equipment: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
 
   get duringTraining() {
     return this.training !== undefined;
@@ -52,6 +55,8 @@ export class UserRole {
     spiritRoots?: SpiritRootType[]; // 支援複數靈根
     reputation?: number; // 名聲
     resources?: number; // 靈石數量
+    backpack?: string[]; // 背包，存放道具名稱
+    equipment?: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
   }) {
     const {
       userId,
@@ -62,6 +67,8 @@ export class UserRole {
       spiritRoots,
       reputation,
       resources,
+      backpack,
+      equipment,
     } = status;
     this.log = getLogger("default");
     this.userId = userId;
@@ -77,6 +84,8 @@ export class UserRole {
     this.spiritRoots = spiritRoots ?? UserRole.randomSpiritRoots();
     this.reputation = reputation ?? 0;
     this.resources = resources ?? 0;
+    this.backpack = backpack ?? [];
+    this.equipment = equipment ?? UserRole.defaultEquipment();
   }
   // 隨機分配複數靈根
   static randomSpiritRoots(): SpiritRootType[] {
@@ -91,6 +100,16 @@ export class UserRole {
     const count = Math.floor(Math.random() * 5) + 1;
     // 隨機選出 count 個不重複的靈根
     return allRoots.sort(() => 0.5 - Math.random()).slice(0, count);
+  }
+
+  // 預設裝備欄
+  static defaultEquipment(): Record<string, string | null> {
+    return {
+      weapon: null,
+      armor: null,
+      ring: null,
+      necklace: null,
+    };
   }
 
   gainExp(exp: number) {
@@ -108,6 +127,8 @@ export class UserRole {
       spiritRoots: this.spiritRoots.map((root) => root as number),
       reputation: this.reputation,
       resources: this.resources,
+      backpack: this.backpack,
+      equipment: this.equipment,
     };
   }
 
@@ -130,5 +151,22 @@ export class UserRole {
     } else {
       return 0;
     }
+  }
+
+  // 取得背包所有物品詳細資料
+  getBackpackItems(): ItemDefinition[] {
+    return this.backpack
+      .map((id) => getItemById(id))
+      .filter(Boolean) as ItemDefinition[];
+  }
+
+  // 取得裝備詳細資料（依部位）
+  getEquipmentDetails(): Record<string, ItemDefinition | null> {
+    const details: Record<string, ItemDefinition | null> = {};
+    for (const slot of Object.keys(this.equipment)) {
+      const id = this.equipment[slot];
+      details[slot] = id ? getItemById(id) ?? null : null;
+    }
+    return details;
   }
 }
