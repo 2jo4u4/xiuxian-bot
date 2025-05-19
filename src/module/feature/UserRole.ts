@@ -2,26 +2,7 @@ import { getLogger } from "@std/log";
 import { format, difference } from "../../deps.ts";
 import { Role } from "./DataBase.ts";
 import type { QuestNode } from "./QuestManager.ts";
-
-export enum LevelThreshold {
-  練氣 = 100,
-  築基 = 300,
-  金丹 = 700,
-  元嬰 = 1200,
-  化神 = 7700,
-  煉虛 = 24400,
-  合體 = 51200,
-  大乘 = 100000,
-}
-
-// 靈根
-export enum SpiritRootType {
-  金靈根,
-  木靈根,
-  水靈根,
-  火靈根,
-  土靈根,
-}
+import { LevelName, SpiritRootType } from "./Constants.ts";
 
 export class UserRole {
   readonly userId: bigint;
@@ -42,24 +23,24 @@ export class UserRole {
   executeQuest: QuestNode | null;
   get level() {
     switch (true) {
-      case this.exp > LevelThreshold.大乘:
-        return { text: "渡劫境", priority: Math.pow(10, 20) };
-      case this.exp > LevelThreshold.合體:
-        return { text: "大乘境", priority: Math.pow(10, 16) };
-      case this.exp > LevelThreshold.煉虛:
-        return { text: "合體境", priority: Math.pow(10, 13) };
-      case this.exp > LevelThreshold.化神:
-        return { text: "煉虛境", priority: Math.pow(10, 10) };
-      case this.exp > LevelThreshold.元嬰:
-        return { text: "化神境", priority: Math.pow(10, 7) };
-      case this.exp > LevelThreshold.金丹:
-        return { text: "元嬰境", priority: Math.pow(10, 5) };
-      case this.exp > LevelThreshold.築基:
-        return { text: "金丹境", priority: Math.pow(10, 3) };
-      case this.exp > LevelThreshold.練氣:
-        return { text: "築基境", priority: Math.pow(10, 1) };
+      case this.exp > 100000:
+        return { text: LevelName.渡劫境, priority: Math.pow(10, 20) };
+      case this.exp > 51200:
+        return { text: LevelName.大乘境, priority: Math.pow(10, 16) };
+      case this.exp > 24400:
+        return { text: LevelName.合體境, priority: Math.pow(10, 13) };
+      case this.exp > 7700:
+        return { text: LevelName.煉虛境, priority: Math.pow(10, 10) };
+      case this.exp > 1200:
+        return { text: LevelName.化神境, priority: Math.pow(10, 7) };
+      case this.exp > 700:
+        return { text: LevelName.元嬰境, priority: Math.pow(10, 5) };
+      case this.exp > 300:
+        return { text: LevelName.金丹境, priority: Math.pow(10, 3) };
+      case this.exp > 100:
+        return { text: LevelName.築基境, priority: Math.pow(10, 1) };
       default:
-        return { text: "練氣境", priority: 0 };
+        return { text: LevelName.練氣境, priority: 0 };
     }
   }
   constructor(status: {

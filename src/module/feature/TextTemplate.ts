@@ -1,5 +1,6 @@
 import { difference } from "../../deps.ts";
-import { CommandCtrl, UserCommand, CommandAlais } from "./UserCommand.ts";
+import { CommandCtrl } from "./UserCommand.ts";
+import { UserCommand, CommandAlais } from "./Constants.ts";
 import type { UserRole } from "./UserRole.ts";
 const HelpDesc: Record<string, string> = {
   [UserCommand.建立角色]: "創建你的修仙角色",

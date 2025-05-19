@@ -8,7 +8,8 @@ import {
   MessageComponentTypes,
   startBot,
 } from "../../deps.ts";
-import { CommandCtrl, UserCommand } from "./UserCommand.ts";
+import { CommandCtrl } from "./UserCommand.ts";
+import { UserCommand } from "./Constants.ts";
 import { Game } from "./Game.ts";
 import { QuestManager } from "./QuestManager.ts";
 import { Template } from "./TextTemplate.ts";
