@@ -20,11 +20,9 @@ export function init(): void {
 }
 
 export function write(filename: StorageFilename, data: Uint8Array): void {
-  const filepath = join(
-    Deno.cwd(),
-    Deno.env.get("STORAGEFOLDER") ?? "",
-    StorageFilename[filename]
-  );
+  const folderpath = join(Deno.cwd(), Deno.env.get("STORAGEFOLDER") ?? "");
+  Deno.mkdirSync(folderpath, { recursive: true });
+  const filepath = join(folderpath, StorageFilename[filename]);
   log().debug(filepath);
   Deno.writeFileSync(filepath, data);
 }
