@@ -66,9 +66,14 @@ export async function botLoop() {
               return;
             }
             case UserCommand.建立角色: {
+              // 讓玩家自訂屬性（簡易互動範例：隨機分配，未來可改為互動式選擇）
               const role = game.createRole(guildId, authorId);
               game.addRole(role);
-              const content = Template.createRole(tag);
+              let content = Template.createRole(tag);
+              content += `\n你的靈根：${role.spiritRoot}`;
+              content += `\n體質：${role.constitution}`;
+              content += `\n名聲：${role.reputation}`;
+              content += `\n資源：${role.resources}`;
               bot.helpers.sendMessage(channelId, { content });
               return;
             }

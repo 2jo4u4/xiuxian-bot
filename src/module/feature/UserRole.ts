@@ -21,6 +21,11 @@ export class UserRole {
   private exp: number;
   private training?: string;
   readonly log: ReturnType<typeof getLogger>;
+  // 新增屬性
+  spiritRoot: string; // 靈根（金/木/水/火/土）
+  constitution: string; // 體質
+  reputation: number; // 名聲
+  resources: number; // 資源
 
   get duringTraining() {
     return this.training !== undefined;
@@ -47,8 +52,22 @@ export class UserRole {
     exp?: number;
     date?: string;
     training?: string;
+    spiritRoot?: string;
+    constitution?: string;
+    reputation?: number;
+    resources?: number;
   }) {
-    const { userId, guildId, exp = 0, date, training } = status;
+    const {
+      userId,
+      guildId,
+      exp = 0,
+      date,
+      training,
+      spiritRoot,
+      constitution,
+      reputation,
+      resources,
+    } = status;
     this.log = getLogger("default");
     this.userId = userId;
     this.guildId = guildId;
@@ -59,6 +78,16 @@ export class UserRole {
     );
     this.executeQuest = null;
     this.training = training;
+    // 新增屬性初始化
+    this.spiritRoot = spiritRoot ?? UserRole.randomSpiritRoot();
+    this.constitution = constitution ?? "普通";
+    this.reputation = reputation ?? 0;
+    this.resources = resources ?? 0;
+  }
+  // 隨機分配靈根
+  static randomSpiritRoot(): string {
+    const roots = ["金", "木", "水", "火", "土"];
+    return roots[Math.floor(Math.random() * roots.length)];
   }
 
   gainExp(exp: number) {
@@ -73,6 +102,10 @@ export class UserRole {
       exp: this.exp,
       date: this.createDate,
       training: this.training,
+      spiritRoot: this.spiritRoot,
+      constitution: this.constitution,
+      reputation: this.reputation,
+      resources: this.resources,
     };
   }
 

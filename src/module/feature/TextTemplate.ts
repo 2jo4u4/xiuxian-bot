@@ -62,6 +62,10 @@ export const Template = {
     let str = "```md\n";
     str += userName + " 的修仙之路\n";
     str += "> 目前境界 " + role.level.text + "\n";
+    str += "> 靈根：" + role.spiritRoot + "\n";
+    str += "> 體質：" + role.constitution + "\n";
+    str += "> 名聲：" + role.reputation + "\n";
+    str += "> 資源：" + role.resources + "\n";
     str +=
       "> 總共修行了 " +
       difference(new Date(role.createDate), new Date(), { units: ["days"] })

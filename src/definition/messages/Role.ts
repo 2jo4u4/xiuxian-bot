@@ -3,19 +3,13 @@ import {
   tsValueToJsonValueFns,
   jsonValueToTsValueFns,
 } from "../runtime/json/scalar.ts";
-import {
-  WireMessage,
-} from "../runtime/wire/index.ts";
-import {
-  default as serialize,
-} from "../runtime/wire/serialize.ts";
+import { WireMessage } from "../runtime/wire/index.ts";
+import { default as serialize } from "../runtime/wire/serialize.ts";
 import {
   tsValueToWireValueFns,
   wireValueToTsValueFns,
 } from "../runtime/wire/scalar.ts";
-import {
-  default as deserialize,
-} from "../runtime/wire/deserialize.ts";
+import { default as deserialize } from "../runtime/wire/deserialize.ts";
 
 export declare namespace $ {
   export type Role = {
@@ -25,7 +19,11 @@ export declare namespace $ {
     exp: number;
     date: string;
     training?: string;
-  }
+    spiritRoot?: string; // 新增
+    constitution?: string; // 新增
+    reputation?: number; // 新增
+    resources?: number; // 新增
+  };
 }
 
 export type Type = $.Role;
@@ -38,6 +36,10 @@ export function getDefaultValue(): $.Role {
     exp: 0,
     date: "",
     training: undefined,
+    spiritRoot: "普通",
+    constitution: "普通",
+    reputation: 0,
+    resources: 0,
   };
 }
 
@@ -49,24 +51,50 @@ export function createValue(partialValue: Partial<$.Role>): $.Role {
 }
 
 export function encodeJson(value: $.Role): unknown {
-  const result: any = {};
+  const result: Record<string, unknown> = {};
   if (value.id !== undefined) result.id = tsValueToJsonValueFns.int32(value.id);
-  if (value.userId !== undefined) result.userId = tsValueToJsonValueFns.string(value.userId);
-  if (value.guildId !== undefined) result.guildId = tsValueToJsonValueFns.string(value.guildId);
-  if (value.exp !== undefined) result.exp = tsValueToJsonValueFns.int32(value.exp);
-  if (value.date !== undefined) result.date = tsValueToJsonValueFns.string(value.date);
-  if (value.training !== undefined) result.training = tsValueToJsonValueFns.string(value.training);
+  if (value.userId !== undefined)
+    result.userId = tsValueToJsonValueFns.string(value.userId);
+  if (value.guildId !== undefined)
+    result.guildId = tsValueToJsonValueFns.string(value.guildId);
+  if (value.exp !== undefined)
+    result.exp = tsValueToJsonValueFns.int32(value.exp);
+  if (value.date !== undefined)
+    result.date = tsValueToJsonValueFns.string(value.date);
+  if (value.training !== undefined)
+    result.training = tsValueToJsonValueFns.string(value.training);
+  if (value.spiritRoot !== undefined)
+    result.spiritRoot = tsValueToJsonValueFns.string(value.spiritRoot);
+  if (value.constitution !== undefined)
+    result.constitution = tsValueToJsonValueFns.string(value.constitution);
+  if (value.reputation !== undefined)
+    result.reputation = tsValueToJsonValueFns.int32(value.reputation);
+  if (value.resources !== undefined)
+    result.resources = tsValueToJsonValueFns.int32(value.resources);
   return result;
 }
 
-export function decodeJson(value: any): $.Role {
+export function decodeJson(value: Record<string, unknown>): $.Role {
   const result = getDefaultValue();
   if (value.id !== undefined) result.id = jsonValueToTsValueFns.int32(value.id);
-  if (value.userId !== undefined) result.userId = jsonValueToTsValueFns.string(value.userId);
-  if (value.guildId !== undefined) result.guildId = jsonValueToTsValueFns.string(value.guildId);
-  if (value.exp !== undefined) result.exp = jsonValueToTsValueFns.int32(value.exp);
-  if (value.date !== undefined) result.date = jsonValueToTsValueFns.string(value.date);
-  if (value.training !== undefined) result.training = jsonValueToTsValueFns.string(value.training);
+  if (value.userId !== undefined)
+    result.userId = jsonValueToTsValueFns.string(value.userId);
+  if (value.guildId !== undefined)
+    result.guildId = jsonValueToTsValueFns.string(value.guildId);
+  if (value.exp !== undefined)
+    result.exp = jsonValueToTsValueFns.int32(value.exp);
+  if (value.date !== undefined)
+    result.date = jsonValueToTsValueFns.string(value.date);
+  if (value.training !== undefined)
+    result.training = jsonValueToTsValueFns.string(value.training);
+  if (value.spiritRoot !== undefined)
+    result.spiritRoot = jsonValueToTsValueFns.string(value.spiritRoot);
+  if (value.constitution !== undefined)
+    result.constitution = jsonValueToTsValueFns.string(value.constitution);
+  if (value.reputation !== undefined)
+    result.reputation = jsonValueToTsValueFns.int32(value.reputation);
+  if (value.resources !== undefined)
+    result.resources = jsonValueToTsValueFns.int32(value.resources);
   return result;
 }
 
@@ -74,39 +102,43 @@ export function encodeBinary(value: $.Role): Uint8Array {
   const result: WireMessage = [];
   if (value.id !== undefined) {
     const tsValue = value.id;
-    result.push(
-      [1, tsValueToWireValueFns.int32(tsValue)],
-    );
+    result.push([1, tsValueToWireValueFns.int32(tsValue)]);
   }
   if (value.userId !== undefined) {
     const tsValue = value.userId;
-    result.push(
-      [2, tsValueToWireValueFns.string(tsValue)],
-    );
+    result.push([2, tsValueToWireValueFns.string(tsValue)]);
   }
   if (value.guildId !== undefined) {
     const tsValue = value.guildId;
-    result.push(
-      [3, tsValueToWireValueFns.string(tsValue)],
-    );
+    result.push([3, tsValueToWireValueFns.string(tsValue)]);
   }
   if (value.exp !== undefined) {
     const tsValue = value.exp;
-    result.push(
-      [4, tsValueToWireValueFns.int32(tsValue)],
-    );
+    result.push([4, tsValueToWireValueFns.int32(tsValue)]);
   }
   if (value.date !== undefined) {
     const tsValue = value.date;
-    result.push(
-      [5, tsValueToWireValueFns.string(tsValue)],
-    );
+    result.push([5, tsValueToWireValueFns.string(tsValue)]);
   }
   if (value.training !== undefined) {
     const tsValue = value.training;
-    result.push(
-      [6, tsValueToWireValueFns.string(tsValue)],
-    );
+    result.push([6, tsValueToWireValueFns.string(tsValue)]);
+  }
+  if (value.spiritRoot !== undefined) {
+    const tsValue = value.spiritRoot;
+    result.push([7, tsValueToWireValueFns.string(tsValue)]);
+  }
+  if (value.constitution !== undefined) {
+    const tsValue = value.constitution;
+    result.push([8, tsValueToWireValueFns.string(tsValue)]);
+  }
+  if (value.reputation !== undefined) {
+    const tsValue = value.reputation;
+    result.push([9, tsValueToWireValueFns.int32(tsValue)]);
+  }
+  if (value.resources !== undefined) {
+    const tsValue = value.resources;
+    result.push([10, tsValueToWireValueFns.int32(tsValue)]);
   }
   return serialize(result);
 }
@@ -156,6 +188,34 @@ export function decodeBinary(binary: Uint8Array): $.Role {
     const value = wireValueToTsValueFns.string(wireValue);
     if (value === undefined) break field;
     result.training = value;
+  }
+  field: {
+    const wireValue = wireFields.get(7);
+    if (wireValue === undefined) break field;
+    const value = wireValueToTsValueFns.string(wireValue);
+    if (value === undefined) break field;
+    result.spiritRoot = value;
+  }
+  field: {
+    const wireValue = wireFields.get(8);
+    if (wireValue === undefined) break field;
+    const value = wireValueToTsValueFns.string(wireValue);
+    if (value === undefined) break field;
+    result.constitution = value;
+  }
+  field: {
+    const wireValue = wireFields.get(9);
+    if (wireValue === undefined) break field;
+    const value = wireValueToTsValueFns.int32(wireValue);
+    if (value === undefined) break field;
+    result.reputation = value;
+  }
+  field: {
+    const wireValue = wireFields.get(10);
+    if (wireValue === undefined) break field;
+    const value = wireValueToTsValueFns.int32(wireValue);
+    if (value === undefined) break field;
+    result.resources = value;
   }
   return result;
 }
