@@ -8,6 +8,10 @@ export enum LevelThreshold {
   築基 = 300,
   金丹 = 700,
   元嬰 = 1200,
+  化神 = 7700,
+  煉虛 = 24400,
+  合體 = 51200,
+  大乘 = 100000,
 }
 
 export class UserRole {
