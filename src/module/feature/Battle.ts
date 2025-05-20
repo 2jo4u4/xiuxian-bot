@@ -22,16 +22,18 @@ export function battle(player: GamePlayer, monster: Monster): BattleResult {
   let monsterHp = monster.hp;
   const log: string[] = [];
 
-  // 玩家攻擊
-  const playerDmg = Math.max(playerStats.atk - monster.def, 1);
-  monsterHp -= playerDmg;
-  log.push(`你對${monster.name}造成了${playerDmg}點傷害。`);
+  while (playerHp > 0 && monsterHp > 0) {
+    // 玩家攻擊
+    const playerDmg = Math.max(playerStats.atk - monster.def, 1);
+    monsterHp -= playerDmg;
+    log.push(`你對${monster.name}造成了${playerDmg}點傷害。`);
 
-  // 若怪物未死，反擊
-  if (monsterHp > 0) {
-    const monsterDmg = Math.max(monster.atk - playerStats.def, 1);
-    playerHp -= monsterDmg;
-    log.push(`${monster.name}對你造成了${monsterDmg}點傷害。`);
+    // 若怪物未死，反擊
+    if (monsterHp > 0) {
+      const monsterDmg = Math.max(monster.atk - playerStats.def, 1);
+      playerHp -= monsterDmg;
+      log.push(`${monster.name}對你造成了${monsterDmg}點傷害。`);
+    }
   }
 
   // 判斷勝負
