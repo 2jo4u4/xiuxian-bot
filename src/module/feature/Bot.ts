@@ -60,30 +60,27 @@ export async function botLoop() {
           const parsed = commandCtrl.getSecondCommand(...p);
           const { authorId, channelId, tag } = message;
 
-          switch (command) {
-            case UserCommand.幫助: {
-              const content = Template.help();
-              bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.建立角色: {
-              // 讓玩家自訂屬性（簡易互動範例：隨機分配，未來可改為互動式選擇）
+          // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
+          const commandHandlers: Record<UserCommand, () => void> = {
+            [UserCommand.幫助]: () => {
+              bot.helpers.sendMessage(channelId, { content: Template.help() });
+            },
+            [UserCommand.建立角色]: () => {
               const role = game.createRole(guildId, authorId);
               game.addRole(role);
-              const content = Template.createRole(tag);
-              bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.狀態: {
+              bot.helpers.sendMessage(channelId, {
+                content: Template.createRole(tag),
+              });
+            },
+            [UserCommand.狀態]: () => {
               const role = game.getRole(guildId, authorId);
               const content =
                 role === undefined
                   ? Template.noHasRole()
                   : Template.status(tag, role);
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.接受任務: {
+            },
+            [UserCommand.接受任務]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -94,7 +91,6 @@ export async function botLoop() {
                 content = Template.duringTraining(role);
               } else {
                 const quest = questManager.assignQuest(role);
-
                 const components: ButtonComponent[] = [];
                 const disabled = quest.type === "dice";
                 if (disabled) {
@@ -122,12 +118,7 @@ export async function botLoop() {
                     disabled,
                   });
                 });
-
-                const content = Template.questDesc(
-                  quest.title,
-                  quest.desc,
-                  tag
-                );
+                content = Template.questDesc(quest.title, quest.desc, tag);
                 bot.helpers.sendMessage(channelId, {
                   content,
                   components: [
@@ -139,12 +130,19 @@ export async function botLoop() {
                 });
                 return;
               }
-
               bot.helpers.sendMessage(channelId, { content });
-
-              return;
-            }
-            case UserCommand.取消任務: {
+            },
+            [UserCommand.丟骰子]: () => {
+              bot.helpers.sendMessage(channelId, {
+                content: Template.unavailableCommand(),
+              });
+            },
+            [UserCommand.回覆任務]: () => {
+              bot.helpers.sendMessage(channelId, {
+                content: Template.unavailableCommand(),
+              });
+            },
+            [UserCommand.取消任務]: () => {
               const role = game.getRole(guildId, authorId);
               if (role && role.executeQuest !== null) {
                 const content = Template.giveupQuest(role.executeQuest.title);
@@ -157,9 +155,8 @@ export async function botLoop() {
                     : Template.noHasQuest();
                 bot.helpers.sendMessage(channelId, { content });
               }
-              return;
-            }
-            case UserCommand.閉關: {
+            },
+            [UserCommand.閉關]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -171,9 +168,8 @@ export async function botLoop() {
                 content = Template.starTraining(tag);
               }
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.閉關結束: {
+            },
+            [UserCommand.閉關結束]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -185,10 +181,8 @@ export async function botLoop() {
                 content = Template.overTraining(tag, hours);
               }
               bot.helpers.sendMessage(channelId, { content });
-
-              return;
-            }
-            case UserCommand.使用道具: {
+            },
+            [UserCommand.使用道具]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -200,9 +194,8 @@ export async function botLoop() {
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.裝備: {
+            },
+            [UserCommand.裝備]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -214,9 +207,8 @@ export async function botLoop() {
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.卸下裝備: {
+            },
+            [UserCommand.卸下裝備]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -229,9 +221,8 @@ export async function botLoop() {
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.查看背包: {
+            },
+            [UserCommand.查看背包]: () => {
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
@@ -245,21 +236,21 @@ export async function botLoop() {
                 );
               }
               bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
-            case UserCommand.保存所有使用者: {
+            },
+            [UserCommand.保存所有使用者]: () => {
               game.storeUser();
-              return;
-            }
-            case UserCommand.關閉伺服器: {
+            },
+            [UserCommand.關閉伺服器]: () => {
               game.storeUser();
               return Deno.exit(0);
-            }
-            default: {
-              const content = Template.unavailableCommand();
-              bot.helpers.sendMessage(channelId, { content });
-              return;
-            }
+            },
+          };
+
+          if (command in commandHandlers) {
+            commandHandlers[command as UserCommand]!();
+          } else {
+            const content = Template.unavailableCommand();
+            bot.helpers.sendMessage(channelId, { content });
           }
         },
         interactionCreate(bot, interaction) {
