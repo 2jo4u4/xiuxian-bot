@@ -41,19 +41,14 @@ export class GameHost {
   }
   injectUsers() {
     const users = database.readUsers();
-    users.role.forEach(
-      ({ guildId, userId, spiritRoots, reputation, resources, ...other }) => {
-        const role = new UserRole({
-          userId: BigInt(userId),
-          guildId: BigInt(guildId),
-          spiritRoots,
-          reputation,
-          resources,
-          ...other,
-        });
-        this.addRole(role);
-      }
-    );
+    users.role.forEach(({ guildId, userId, ...state }) => {
+      const role = new UserRole({
+        userId: BigInt(userId),
+        guildId: BigInt(guildId),
+        ...state,
+      });
+      this.addRole(role);
+    });
   }
   storeUser() {
     database.storeUsers(
