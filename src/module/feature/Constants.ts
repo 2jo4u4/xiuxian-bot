@@ -40,6 +40,7 @@ export enum UserCommand {
   搜尋敵人, // 新增
   戰鬥, // 新增
   逃跑, // 新增
+  搜尋並戰鬥, // 新增：整合搜尋敵人與戰鬥
   保存所有使用者 = 998,
   關閉伺服器 = 999,
 }
@@ -78,6 +79,9 @@ export const CommandAlais: Record<string, UserCommand> = {
   fight: UserCommand.戰鬥,
   逃跑: UserCommand.逃跑,
   flee: UserCommand.逃跑,
+  搜尋並戰鬥: UserCommand.搜尋並戰鬥,
+  searchfight: UserCommand.搜尋並戰鬥,
+  searchAndFight: UserCommand.搜尋並戰鬥,
 };
 
 // 境界對應經驗值表

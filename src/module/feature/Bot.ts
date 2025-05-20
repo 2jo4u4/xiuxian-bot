@@ -334,6 +334,43 @@ export async function botLoop() {
                 });
               }
             },
+            [UserCommand.搜尋並戰鬥]: () => {
+              const role = game.getRole(guildId, userId);
+              if (!role) {
+                bot.helpers.sendMessage(channelId, {
+                  content: Template.noHasRole(),
+                });
+                return;
+              }
+              // 搜尋敵人
+              const monster = getRandomMonsterByPlayerLevel(role.level.text);
+              // 立即戰鬥
+              const result = battle(role, monster);
+              let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
+              msg += `你與「${monster.name}」展開戰鬥！\n`;
+              msg += result.log ? result.log.join("\n") + "\n" : "";
+              if (result.winner === "player") {
+                role.hp = result.playerHp;
+                role.mp = result.playerMp;
+                const reward = calculateReward(role, monster);
+                role.gainExp(reward.exp);
+                reward.items.forEach((item) => role.gainItem(item.id));
+                msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
+                if (reward.items.length > 0) {
+                  msg += `，並獲得：${reward.items
+                    .map((i) => i.name)
+                    .join("、")}。`;
+                }
+              } else {
+                const lostExp = Math.floor(role.exp * 0.01);
+                role.gainExp(-lostExp);
+                const state = role.getRoleState();
+                role.hp = state.maxHp;
+                role.mp = state.maxMp;
+                msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+              }
+              bot.helpers.sendMessage(channelId, { content: msg });
+            },
           };
 
           if (command in commandHandlers) {

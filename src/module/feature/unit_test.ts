@@ -77,6 +77,12 @@ Deno.test("UserCommand: 新增戰鬥相關指令別名對應正確", () => {
   assertEquals(CommandAlais["flee"], UserCommand.逃跑);
 });
 
+Deno.test("UserCommand: 搜尋並戰鬥指令別名對應正確", () => {
+  assertEquals(CommandAlais["搜尋並戰鬥"], UserCommand.搜尋並戰鬥);
+  assertEquals(CommandAlais["searchfight"], UserCommand.搜尋並戰鬥);
+  assertEquals(CommandAlais["searchAndFight"], UserCommand.搜尋並戰鬥);
+});
+
 Deno.test("UserCommand: CommandCtrl 解析指令", () => {
   const ctrl = new CommandCtrl();
   // 正常指令
@@ -111,4 +117,14 @@ Deno.test("UserCommand: CommandCtrl 解析搜尋敵人/戰鬥/逃跑指令", () 
   assert(result && result.command === UserCommand.逃跑);
   result = ctrl.getCommandType("%修仙 flee");
   assert(result && result.command === UserCommand.逃跑);
+});
+
+Deno.test("UserCommand: CommandCtrl 解析搜尋並戰鬥指令", () => {
+  const ctrl = new CommandCtrl();
+  let result = ctrl.getCommandType("%修仙 搜尋並戰鬥");
+  assert(result && result.command === UserCommand.搜尋並戰鬥);
+  result = ctrl.getCommandType("%修仙 searchfight");
+  assert(result && result.command === UserCommand.搜尋並戰鬥);
+  result = ctrl.getCommandType("%修仙 searchAndFight");
+  assert(result && result.command === UserCommand.搜尋並戰鬥);
 });
