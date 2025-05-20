@@ -10,6 +10,16 @@ export interface ItemDefinition {
   rarity: Rarity;
   description?: string;
   slot?: "weapon" | "armor" | "ring" | "necklace" | string; // 裝備部位，消耗品/素材可省略
+  // 裝備屬性加成
+  bonusHp?: number; // 最大血量加成
+  bonusMp?: number; // 法力加成
+  bonusAtk?: number; // 攻擊力加成
+  bonusDef?: number; // 防禦力加成
+  // 新增：高稀有度百分比加成
+  percentHp?: number; // 最大血量百分比加成（如 0.1 代表+10%）
+  percentMp?: number;
+  percentAtk?: number;
+  percentDef?: number;
 }
 
 export const ItemList: ItemDefinition[] = [
@@ -65,6 +75,7 @@ export const ItemList: ItemDefinition[] = [
     rarity: "uncommon",
     slot: "weapon",
     description: "銳利的青鋒長劍。",
+    bonusAtk: 10,
   },
   {
     id: "blade_lieyan",
@@ -73,6 +84,8 @@ export const ItemList: ItemDefinition[] = [
     rarity: "rare",
     slot: "weapon",
     description: "灼熱的火焰長刀。",
+    bonusAtk: 20,
+    percentAtk: 0.05, // +5% 攻擊力
   },
   {
     id: "armor_ling",
@@ -81,6 +94,8 @@ export const ItemList: ItemDefinition[] = [
     rarity: "uncommon",
     slot: "armor",
     description: "可護身的輕甲。",
+    bonusDef: 10,
+    bonusHp: 50,
   },
   {
     id: "shield_xuantie",
@@ -89,6 +104,9 @@ export const ItemList: ItemDefinition[] = [
     rarity: "rare",
     slot: "armor",
     description: "堅固的玄鐵盾。",
+    bonusDef: 20,
+    bonusHp: 100,
+    percentDef: 0.05, // +5% 防禦力
   },
   {
     id: "necklace_yupei",
@@ -97,6 +115,7 @@ export const ItemList: ItemDefinition[] = [
     rarity: "common",
     slot: "necklace",
     description: "精緻的玉佩。",
+    bonusMp: 10,
   },
   {
     id: "ring_ling",
@@ -105,6 +124,7 @@ export const ItemList: ItemDefinition[] = [
     rarity: "uncommon",
     slot: "ring",
     description: "蘊含靈力的戒指。",
+    bonusMp: 20,
   },
 
   // 法寶
@@ -115,6 +135,8 @@ export const ItemList: ItemDefinition[] = [
     rarity: "epic",
     slot: "weapon",
     description: "可收納雷電的神奇葫蘆。",
+    percentAtk: 0.1, // +10% 攻擊力
+    percentMp: 0.1, // +10% 法力
   },
   {
     id: "artifact_bag",
@@ -123,6 +145,7 @@ export const ItemList: ItemDefinition[] = [
     rarity: "epic",
     slot: "backpack",
     description: "可收納萬物的法寶。",
+    percentHp: 0.1, // +10% 最大血量
   },
   {
     id: "artifact_flying_sword",

@@ -4,7 +4,7 @@ import { UserRole } from "./UserRole.ts";
 
 type GuildId = bigint;
 type UserId = bigint;
-export class Game {
+export class GameHost {
   guildMap: Map<GuildId, Map<UserId, UserRole>>;
   readonly log: ReturnType<typeof getLogger>;
   constructor() {

@@ -10,7 +10,7 @@ import {
 } from "../../deps.ts";
 import { CommandCtrl } from "./UserCommand.ts";
 import { UserCommand } from "./Constants.ts";
-import { Game } from "./Game.ts";
+import { GameHost } from "./GameHost.ts";
 import { QuestManager } from "./QuestManager.ts";
 import { Template } from "./TextTemplate.ts";
 
@@ -28,7 +28,7 @@ function splitBtnCustomId(s: string) {
 export async function botLoop() {
   const DiceKey = "!!Dice";
   const commandCtrl = new CommandCtrl();
-  const game = new Game();
+  const game = new GameHost();
   const questManager = new QuestManager();
   game.injectUsers();
   questManager.injectQuest();
