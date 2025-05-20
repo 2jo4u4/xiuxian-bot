@@ -265,8 +265,7 @@ export async function botLoop() {
         interactionCreate(bot, interaction) {
           if (
             interaction.data === undefined ||
-            interaction.data.customId === undefined ||
-            interaction.guildId === undefined
+            interaction.data.customId === undefined
           ) {
             bot.helpers.sendInteractionResponse(
               interaction.id,
@@ -284,7 +283,7 @@ export async function botLoop() {
           );
           const userid = BigInt(_userid);
           if (interaction.user.id === userid) {
-            const role = game.getRole(interaction.guildId, userid);
+            const role = game.getRole(guildId, userid);
             if (role !== undefined && role.executeQuest !== null) {
               if (customId === DiceKey) {
                 role.executeQuest.onRoll(role);
