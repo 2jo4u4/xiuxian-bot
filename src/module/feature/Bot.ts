@@ -39,6 +39,8 @@ export async function botLoop() {
   game.injectUsers();
   questManager.injectQuest();
   const token = Deno.env.get("DISCORDTOKEN");
+  const hasAdmin = Deno.env.get("MANAGER") !== undefined;
+  const admin = BigInt(Deno.env.get("MANAGER")!);
   if (token !== undefined) {
     const guildId = BigInt(0);
     const bot = createBot({
@@ -67,6 +69,7 @@ export async function botLoop() {
           // guildId 需轉 bigint
           const guildId = BigInt(message.guildId ?? 0);
           const userId = BigInt(authorId);
+          console.log(userId);
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
           const commandHandlers: Record<UserCommand, () => void> = {
@@ -249,11 +252,15 @@ export async function botLoop() {
               bot.helpers.sendMessage(channelId, { content });
             },
             [UserCommand.保存所有使用者]: () => {
-              game.storeUser();
+              if (hasAdmin && admin === userId) {
+                game.storeUser();
+              }
             },
             [UserCommand.關閉伺服器]: () => {
-              game.storeUser();
-              return Deno.exit(0);
+              if (hasAdmin && admin === userId) {
+                game.storeUser();
+                return Deno.exit(0);
+              }
             },
             [UserCommand.搜尋敵人]: () => {
               const role = game.getRole(guildId, userId);
