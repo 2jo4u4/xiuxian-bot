@@ -28,12 +28,8 @@ export class UserRole {
   backpack: string[]; // 背包，存放道具名稱
   equipment: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
   // 戰鬥屬性
-  maxHp: number; // 最大血量
   hp: number; // 當前血量
-  maxMp: number; // 最大法力
   mp: number; // 當前法力
-  atk: number; // 攻擊力
-  def: number; // 防禦力
 
   get duringTraining() {
     return this.training !== undefined;
@@ -61,12 +57,8 @@ export class UserRole {
     resources?: number; // 靈石數量
     backpack?: string[]; // 背包，存放道具名稱
     equipment?: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
-    maxHp?: number;
     hp?: number;
-    maxMp?: number;
     mp?: number;
-    atk?: number;
-    def?: number;
   }) {
     const {
       userId,
@@ -79,6 +71,8 @@ export class UserRole {
       resources,
       backpack,
       equipment,
+      hp,
+      mp,
     } = status;
     this.log = getLogger("default");
     this.userId = userId;
@@ -96,14 +90,10 @@ export class UserRole {
     this.resources = resources ?? 0;
     this.backpack = backpack ?? [];
     this.equipment = equipment ?? UserRole.defaultEquipment();
-    // 根據境界自動計算戰鬥屬性
-    const baseStats = getBaseStatsByLevel(getLevelByExp(this.exp));
-    this.maxHp = status.maxHp ?? baseStats.maxHp;
-    this.hp = status.hp ?? this.maxHp;
-    this.maxMp = status.maxMp ?? baseStats.maxMp;
-    this.mp = status.mp ?? this.maxMp;
-    this.atk = status.atk ?? baseStats.atk;
-    this.def = status.def ?? baseStats.def;
+    // 初始化當前血量/法力
+    const { maxHp, maxMp } = this.getRoleState();
+    this.hp = hp ?? maxHp;
+    this.mp = mp ?? maxMp;
   }
   // 隨機分配複數靈根
   static randomSpiritRoots(): SpiritRootType[] {
@@ -251,9 +241,9 @@ export class UserRole {
     // 從背包移除
     this.backpack.splice(idx, 1);
     // 檢查當前血量/法力是否超過最大值
-    const stats = this.getFinalStats();
-    if (this.hp > stats.maxHp) this.hp = stats.maxHp;
-    if (this.mp > stats.maxMp) this.mp = stats.maxMp;
+    const { maxHp, maxMp } = this.getRoleState();
+    if (this.hp > maxHp) this.hp = maxHp;
+    if (this.mp > maxMp) this.mp = maxMp;
     return { success: true, message: `你裝備了${item.name}（${item.slot}）。` };
   }
 
@@ -269,14 +259,14 @@ export class UserRole {
     this.equipment[slot] = null;
     const item = getItemById(itemId);
     // 檢查當前血量/法力是否超過最大值
-    const stats = this.getFinalStats();
-    if (this.hp > stats.maxHp) this.hp = stats.maxHp;
-    if (this.mp > stats.maxMp) this.mp = stats.maxMp;
+    const { maxHp, maxMp } = this.getRoleState();
+    if (this.hp > maxHp) this.hp = maxHp;
+    if (this.mp > maxMp) this.mp = maxMp;
     return { success: true, message: `你卸下了${item ? item.name : itemId}。` };
   }
 
   // 計算當前裝備加成後的最終屬性
-  getFinalStats() {
+  getRoleState() {
     // 1. 取得基礎屬性
     const base = getBaseStatsByLevel(getLevelByExp(this.exp));
     let totalHp = base.maxHp;
@@ -310,8 +300,6 @@ export class UserRole {
     return {
       maxHp: totalHp,
       maxMp: totalMp,
-      mp: this.mp, // 保持當前法力
-      hp: this.hp, // 保持當前血量
       atk: totalAtk,
       def: totalDef,
     };

@@ -17,7 +17,7 @@ export interface BattleResult {
  * @returns BattleResult
  */
 export function battle(player: UserRole, monster: Monster): BattleResult {
-  const playerStats = player.getFinalStats();
+  const playerStats = player.getRoleState();
   let playerHp = player.hp;
   let monsterHp = monster.hp;
   const log: string[] = [];
