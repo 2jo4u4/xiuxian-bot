@@ -1,14 +1,14 @@
-export const UINT16_MAX = 0xFFFF;
-export const UINT32_MAX = 0xFFFFFFFF;
+export const UINT16_MAX = 0xffff;
+export const UINT32_MAX = 0xffffffff;
 
 export default class Long extends Uint32Array {
   constructor(lo: number = 0, hi: number = 0) {
     super([lo, hi]);
   }
-  toString(signed = true): string {
+  override toString(signed = true): string {
     const [lo, hi] = this;
     if (lo === 0 && hi === 0) return "0";
-    if (signed && (hi > 0x7FFFFFFF)) {
+    if (signed && hi > 0x7fffffff) {
       return "-" + add(negate(this), one).toString(false);
     }
     const result = [];
@@ -52,7 +52,10 @@ function makeChunk(value: Long): [number, number, number, number] {
 export function add(a: Long, b: Long): Long {
   const [a00, a16, a32, a48] = makeChunk(a);
   const [b00, b16, b32, b48] = makeChunk(b);
-  let c48 = 0, c32 = 0, c16 = 0, c00 = 0;
+  let c48 = 0,
+    c32 = 0,
+    c16 = 0,
+    c00 = 0;
   c00 += a00 + b00;
   c16 += c00 >>> 16;
   c00 &= UINT16_MAX;
@@ -64,7 +67,7 @@ export function add(a: Long, b: Long): Long {
   c32 &= UINT16_MAX;
   c48 += a48 + b48;
   c48 &= UINT16_MAX;
-  return new Long(c16 << 16 | c00, c48 << 16 | c32);
+  return new Long((c16 << 16) | c00, (c48 << 16) | c32);
 }
 
 export function sub(a: Long, b: Long): Long {
@@ -74,7 +77,10 @@ export function sub(a: Long, b: Long): Long {
 export function mul(a: Long, b: Long): Long {
   const [a00, a16, a32, a48] = makeChunk(a);
   const [b00, b16, b32, b48] = makeChunk(b);
-  let c48 = 0, c32 = 0, c16 = 0, c00 = 0;
+  let c48 = 0,
+    c32 = 0,
+    c16 = 0,
+    c00 = 0;
   c00 += a00 * b00;
   c16 += c00 >>> 16;
   c00 &= UINT16_MAX;
@@ -86,16 +92,13 @@ export function mul(a: Long, b: Long): Long {
   c32 &= UINT16_MAX;
   c48 += a00 * b48 + a16 * b32 + a32 * b16 + a48 * b00;
   c48 &= UINT16_MAX;
-  return new Long(c16 << 16 | c00, c48 << 16 | c32);
+  return new Long((c16 << 16) | c00, (c48 << 16) | c32);
 }
 
 export function divByTen(value: Long): [Long, number] {
   const [lo, hi] = value;
   return [
-    new Long(
-      (((hi % 10) * (UINT32_MAX + 1) + lo) / 10) | 0,
-      (hi / 10) | 0,
-    ),
+    new Long((((hi % 10) * (UINT32_MAX + 1) + lo) / 10) | 0, (hi / 10) | 0),
     ((hi % 10) * (UINT32_MAX + 1) + lo) % 10,
   ];
 }
