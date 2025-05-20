@@ -100,7 +100,7 @@ export class UserRole {
     const baseStats = getBaseStatsByLevel(getLevelByExp(this.exp));
     this.maxHp = status.maxHp ?? baseStats.maxHp;
     this.hp = status.hp ?? this.maxHp;
-    this.maxMp = status.maxMp ?? baseStats.mp;
+    this.maxMp = status.maxMp ?? baseStats.maxMp;
     this.mp = status.mp ?? this.maxMp;
     this.atk = status.atk ?? baseStats.atk;
     this.def = status.def ?? baseStats.def;
@@ -280,7 +280,7 @@ export class UserRole {
     // 1. 取得基礎屬性
     const base = getBaseStatsByLevel(getLevelByExp(this.exp));
     let totalHp = base.maxHp;
-    let totalMp = base.mp;
+    let totalMp = base.maxMp;
     let totalAtk = base.atk;
     let totalDef = base.def;
     let percentHp = 0;

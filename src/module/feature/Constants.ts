@@ -93,3 +93,34 @@ export function getLevelByExp(exp: number): LevelName {
   }
   return LevelName.練氣境;
 }
+
+// 根據境界取得基礎屬性
+export function getBaseStatsByLevel(level: LevelName): {
+  maxHp: number;
+  maxMp: number;
+  atk: number;
+  def: number;
+} {
+  switch (level) {
+    case LevelName.練氣境:
+      return { maxHp: 100, maxMp: 30, atk: 10, def: 5 };
+    case LevelName.築基境:
+      return { maxHp: 200, maxMp: 60, atk: 20, def: 10 };
+    case LevelName.金丹境:
+      return { maxHp: 400, maxMp: 120, atk: 40, def: 20 };
+    case LevelName.元嬰境:
+      return { maxHp: 800, maxMp: 240, atk: 80, def: 40 };
+    case LevelName.化神境:
+      return { maxHp: 1600, maxMp: 480, atk: 160, def: 80 };
+    case LevelName.煉虛境:
+      return { maxHp: 3200, maxMp: 960, atk: 320, def: 160 };
+    case LevelName.合體境:
+      return { maxHp: 6400, maxMp: 1920, atk: 640, def: 320 };
+    case LevelName.大乘境:
+      return { maxHp: 12800, maxMp: 3840, atk: 1280, def: 640 };
+    case LevelName.渡劫境:
+      return { maxHp: 25600, maxMp: 7680, atk: 2560, def: 1280 };
+    default:
+      return { maxHp: 100, maxMp: 30, atk: 10, def: 5 };
+  }
+}
