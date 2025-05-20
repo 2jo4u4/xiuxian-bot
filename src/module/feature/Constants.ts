@@ -71,4 +71,25 @@ export const CommandAlais: Record<string, UserCommand> = {
   bag: UserCommand.查看背包,
 };
 
-// 其他可集中管理的常數、描述、字串等
+// 境界對應經驗值表
+export const LevelExpTable: Record<LevelName, number> = {
+  [LevelName.練氣境]: 0,
+  [LevelName.築基境]: 100,
+  [LevelName.金丹境]: 300,
+  [LevelName.元嬰境]: 700,
+  [LevelName.化神境]: 1200,
+  [LevelName.煉虛境]: 7700,
+  [LevelName.合體境]: 24400,
+  [LevelName.大乘境]: 51200,
+  [LevelName.渡劫境]: 100000,
+};
+
+export function getLevelByExp(exp: number): LevelName {
+  // 依經驗值由高到低找出對應境界
+  const levels = Object.entries(LevelExpTable) as [LevelName, number][];
+  levels.sort((a, b) => b[1] - a[1]);
+  for (const [level, threshold] of levels) {
+    if (exp >= threshold) return level;
+  }
+  return LevelName.練氣境;
+}

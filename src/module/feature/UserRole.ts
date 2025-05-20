@@ -2,7 +2,7 @@ import { getLogger } from "@std/log";
 import { format, difference } from "../../deps.ts";
 import { Role } from "./DataBase.ts";
 import type { QuestNode } from "./QuestManager.ts";
-import { LevelName, SpiritRootType } from "./Constants.ts";
+import { SpiritRootType, LevelExpTable, getLevelByExp } from "./Constants.ts";
 import {
   getItemById,
   getItemByNameOrId,
@@ -29,26 +29,14 @@ export class UserRole {
 
   executeQuest: QuestNode | null;
   get level() {
-    switch (true) {
-      case this.exp > 100000:
-        return { text: LevelName.渡劫境, priority: Math.pow(10, 14) };
-      case this.exp > 51200:
-        return { text: LevelName.大乘境, priority: Math.pow(10, 11) };
-      case this.exp > 24400:
-        return { text: LevelName.合體境, priority: Math.pow(10, 9) };
-      case this.exp > 7700:
-        return { text: LevelName.煉虛境, priority: Math.pow(10, 7) };
-      case this.exp > 1200:
-        return { text: LevelName.化神境, priority: Math.pow(10, 5) };
-      case this.exp > 700:
-        return { text: LevelName.元嬰境, priority: Math.pow(10, 3) };
-      case this.exp > 300:
-        return { text: LevelName.金丹境, priority: Math.pow(10, 2) };
-      case this.exp > 100:
-        return { text: LevelName.築基境, priority: Math.pow(10, 1) };
-      default:
-        return { text: LevelName.練氣境, priority: 0 };
-    }
+    // 直接用經驗值查表
+    const levelName = getLevelByExp(this.exp);
+    // 取得優先級（與舊有一致）
+    const priority = Math.pow(
+      10,
+      Object.keys(LevelExpTable).indexOf(levelName)
+    );
+    return { text: levelName, priority };
   }
   constructor(status: {
     userId: bigint;
