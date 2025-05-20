@@ -21,6 +21,8 @@ message Role{
     int32 resources = 9; // 資源
     repeated string backpack = 10; // 背包，存放道具ID
     map<string, string> equipment = 11; // 裝備欄，key為部位，value為道具ID或空字串
+    int32 hp = 12; // 當前血量
+    int32 mp = 13; // 當前法力
 }
 
 message Users{

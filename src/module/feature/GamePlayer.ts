@@ -126,6 +126,13 @@ export class GamePlayer {
   }
 
   toRole(): Omit<Role, "id"> {
+    // 將 equipment: Record<string, string|null> 轉為 Map<string, string>（protobuf 需要 Map）
+    const equipmentMap = new Map<string, string>();
+    for (const key in this.equipment) {
+      const value = this.equipment[key];
+      // protobuf map 不支援 null，空位用空字串
+      equipmentMap.set(key, value ?? "");
+    }
     return {
       userId: this.userId.toString(),
       guildId: this.guildId.toString(),
@@ -136,14 +143,9 @@ export class GamePlayer {
       reputation: this.reputation,
       resources: this.resources,
       backpack: this.backpack,
-      equipment: this.equipment,
-      // 可選：如需序列化戰鬥屬性可加上
-      // maxHp: this.maxHp,
-      // hp: this.hp,
-      // maxMp: this.maxMp,
-      // mp: this.mp,
-      // atk: this.atk,
-      // def: this.def,
+      equipment: equipmentMap,
+      hp: this.hp,
+      mp: this.mp,
     };
   }
 
