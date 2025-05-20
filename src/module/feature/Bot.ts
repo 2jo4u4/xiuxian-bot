@@ -13,6 +13,12 @@ import { UserCommand } from "./Constants.ts";
 import { GameHost } from "./GameHost.ts";
 import { QuestManager } from "./QuestManager.ts";
 import { Template } from "./TextTemplate.ts";
+import { getRandomMonsterByPlayerLevel, Monster } from "./Monster.ts";
+import { calculateReward } from "./Reward.ts";
+import { battle } from "./Battle.ts";
+
+// 玩家臨時遭遇怪物暫存（型別明確）
+const playerEncounter: Map<string, Monster> = new Map();
 
 const symbolCustomId = ", ";
 function createBtnCustomId(...ss: string[]) {
@@ -58,6 +64,9 @@ export async function botLoop() {
           if (isCommand === null) return;
           const { command, p } = isCommand;
           const { authorId, channelId, tag } = message;
+          // guildId 需轉 bigint
+          const guildId = BigInt(message.guildId ?? 0);
+          const userId = BigInt(authorId);
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
           const commandHandlers: Record<UserCommand, () => void> = {
@@ -245,6 +254,77 @@ export async function botLoop() {
             [UserCommand.關閉伺服器]: () => {
               game.storeUser();
               return Deno.exit(0);
+            },
+            [UserCommand.搜尋敵人]: () => {
+              const role = game.getRole(guildId, userId);
+              if (!role) {
+                bot.helpers.sendMessage(channelId, {
+                  content: Template.noHasRole(),
+                });
+                return;
+              }
+              const monster = getRandomMonsterByPlayerLevel(role.level.text);
+              playerEncounter.set(`${role.guildId}_${role.userId}`, monster);
+              bot.helpers.sendMessage(channelId, {
+                content: `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`,
+              });
+            },
+            [UserCommand.戰鬥]: () => {
+              const role = game.getRole(guildId, userId);
+              if (!role) {
+                bot.helpers.sendMessage(channelId, {
+                  content: Template.noHasRole(),
+                });
+                return;
+              }
+              const key = `${role.guildId}_${role.userId}`;
+              const monster = playerEncounter.get(key);
+              if (!monster) {
+                bot.helpers.sendMessage(channelId, {
+                  content: "你目前沒有遇到任何敵人，請先『搜尋敵人』。",
+                });
+                return;
+              }
+              // 執行戰鬥
+              const result = battle(role, monster);
+              let msg = `你與「${monster.name}」展開戰鬥！\n`;
+              msg += result.log ? result.log.join("\n") + "\n" : "";
+              if (result.winner === "player") {
+                // 勝利給獎勵
+                const reward = calculateReward(role, monster);
+                role.gainExp(reward.exp);
+                reward.items.forEach((item) => role.gainItem(item.id));
+                msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
+                if (reward.items.length > 0) {
+                  msg += `，並獲得：${reward.items
+                    .map((i) => i.name)
+                    .join("、")}。`;
+                }
+              } else {
+                msg += "你戰敗了，請再接再厲！";
+              }
+              playerEncounter.delete(key);
+              bot.helpers.sendMessage(channelId, { content: msg });
+            },
+            [UserCommand.逃跑]: () => {
+              const role = game.getRole(guildId, userId);
+              if (!role) {
+                bot.helpers.sendMessage(channelId, {
+                  content: Template.noHasRole(),
+                });
+                return;
+              }
+              const key = `${role.guildId}_${role.userId}`;
+              if (playerEncounter.has(key)) {
+                playerEncounter.delete(key);
+                bot.helpers.sendMessage(channelId, {
+                  content: "你選擇了逃跑，暫時脫離了危險。",
+                });
+              } else {
+                bot.helpers.sendMessage(channelId, {
+                  content: "你目前沒有遇到任何敵人。",
+                });
+              }
             },
           };
 

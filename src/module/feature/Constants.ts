@@ -37,6 +37,9 @@ export enum UserCommand {
   裝備, // + item name
   卸下裝備, // + slot("weapon" | "armor" | "ring" | "necklace")
   查看背包,
+  搜尋敵人, // 新增
+  戰鬥, // 新增
+  逃跑, // 新增
   保存所有使用者 = 998,
   關閉伺服器 = 999,
 }
@@ -69,6 +72,12 @@ export const CommandAlais: Record<string, UserCommand> = {
   查看背包: UserCommand.查看背包,
   backpack: UserCommand.查看背包,
   bag: UserCommand.查看背包,
+  搜尋敵人: UserCommand.搜尋敵人,
+  search: UserCommand.搜尋敵人,
+  戰鬥: UserCommand.戰鬥,
+  fight: UserCommand.戰鬥,
+  逃跑: UserCommand.逃跑,
+  flee: UserCommand.逃跑,
 };
 
 // 境界對應經驗值表

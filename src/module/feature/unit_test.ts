@@ -68,6 +68,15 @@ Deno.test("UserCommand: 指令別名對應正確", () => {
   assertEquals(CommandAlais["查看背包"], UserCommand.查看背包);
 });
 
+Deno.test("UserCommand: 新增戰鬥相關指令別名對應正確", () => {
+  assertEquals(CommandAlais["搜尋敵人"], UserCommand.搜尋敵人);
+  assertEquals(CommandAlais["search"], UserCommand.搜尋敵人);
+  assertEquals(CommandAlais["戰鬥"], UserCommand.戰鬥);
+  assertEquals(CommandAlais["fight"], UserCommand.戰鬥);
+  assertEquals(CommandAlais["逃跑"], UserCommand.逃跑);
+  assertEquals(CommandAlais["flee"], UserCommand.逃跑);
+});
+
 Deno.test("UserCommand: CommandCtrl 解析指令", () => {
   const ctrl = new CommandCtrl();
   // 正常指令
@@ -86,4 +95,20 @@ Deno.test("UserCommand: CommandCtrl 解析指令", () => {
   // 非修仙指令
   result = ctrl.getCommandType("%其他 狀態");
   assert(result === null);
+});
+
+Deno.test("UserCommand: CommandCtrl 解析搜尋敵人/戰鬥/逃跑指令", () => {
+  const ctrl = new CommandCtrl();
+  let result = ctrl.getCommandType("%修仙 搜尋敵人");
+  assert(result && result.command === UserCommand.搜尋敵人);
+  result = ctrl.getCommandType("%修仙 search");
+  assert(result && result.command === UserCommand.搜尋敵人);
+  result = ctrl.getCommandType("%修仙 戰鬥");
+  assert(result && result.command === UserCommand.戰鬥);
+  result = ctrl.getCommandType("%修仙 fight");
+  assert(result && result.command === UserCommand.戰鬥);
+  result = ctrl.getCommandType("%修仙 逃跑");
+  assert(result && result.command === UserCommand.逃跑);
+  result = ctrl.getCommandType("%修仙 flee");
+  assert(result && result.command === UserCommand.逃跑);
 });
