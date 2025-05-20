@@ -32,10 +32,9 @@ export async function botLoop() {
   const questManager = new QuestManager();
   game.injectUsers();
   questManager.injectQuest();
-  const guildId = BigInt(10);
-
   const token = Deno.env.get("DISCORDTOKEN");
   if (token !== undefined) {
+    const guildId = BigInt(0);
     const bot = createBot({
       token,
       intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent,
@@ -57,7 +56,8 @@ export async function botLoop() {
 
           const isCommand = commandCtrl.getCommandType(message.content);
           if (isCommand === null) return;
-          const { command } = isCommand;
+          const { command, p } = isCommand;
+          const parsed = commandCtrl.getSecondCommand(...p);
           const { authorId, channelId, tag } = message;
 
           switch (command) {
@@ -186,6 +186,65 @@ export async function botLoop() {
               }
               bot.helpers.sendMessage(channelId, { content });
 
+              return;
+            }
+            case UserCommand.使用道具: {
+              const role = game.getRole(guildId, authorId);
+              let content = "";
+              if (role === undefined) {
+                content = Template.noHasRole();
+              } else if (!parsed?.itemId) {
+                content = "請輸入要使用的道具ID。";
+              } else {
+                const result = role.useItem(parsed.itemId);
+                content = result.message;
+              }
+              bot.helpers.sendMessage(channelId, { content });
+              return;
+            }
+            case UserCommand.裝備: {
+              const role = game.getRole(guildId, authorId);
+              let content = "";
+              if (role === undefined) {
+                content = Template.noHasRole();
+              } else if (!parsed?.itemId) {
+                content = "請輸入要裝備的道具ID。";
+              } else {
+                const result = role.equipItem(parsed.itemId);
+                content = result.message;
+              }
+              bot.helpers.sendMessage(channelId, { content });
+              return;
+            }
+            case UserCommand.卸下裝備: {
+              const role = game.getRole(guildId, authorId);
+              let content = "";
+              if (role === undefined) {
+                content = Template.noHasRole();
+              } else if (!parsed?.slot) {
+                content =
+                  "請輸入要卸下的部位名稱（如 weapon/armor/ring/necklace）。";
+              } else {
+                const result = role.unequip(parsed.slot);
+                content = result.message;
+              }
+              bot.helpers.sendMessage(channelId, { content });
+              return;
+            }
+            case UserCommand.查看背包: {
+              const role = game.getRole(guildId, authorId);
+              let content = "";
+              if (role === undefined) {
+                content = Template.noHasRole();
+              } else {
+                const backpackItems = role.getBackpackItems();
+                const equipmentDetails = role.getEquipmentDetails();
+                content = Template.showBackpackAndEquipment(
+                  backpackItems,
+                  equipmentDetails
+                );
+              }
+              bot.helpers.sendMessage(channelId, { content });
               return;
             }
             case UserCommand.保存所有使用者: {

@@ -33,6 +33,10 @@ export enum UserCommand {
   取消任務,
   閉關,
   閉關結束,
+  使用道具, // + item name
+  裝備, // + item name
+  卸下裝備, // + slot("weapon" | "armor" | "ring" | "necklace")
+  查看背包,
   保存所有使用者 = 998,
   關閉伺服器 = 999,
 }
@@ -56,6 +60,15 @@ export const CommandAlais: Record<string, UserCommand> = {
   training: UserCommand.閉關,
   閉關結束: UserCommand.閉關結束,
   trainingQuit: UserCommand.閉關結束,
+  使用: UserCommand.使用道具,
+  use: UserCommand.使用道具,
+  裝備: UserCommand.裝備,
+  equip: UserCommand.裝備,
+  卸下: UserCommand.卸下裝備,
+  unequip: UserCommand.卸下裝備,
+  查看背包: UserCommand.查看背包,
+  backpack: UserCommand.查看背包,
+  bag: UserCommand.查看背包,
 };
 
 // 其他可集中管理的常數、描述、字串等

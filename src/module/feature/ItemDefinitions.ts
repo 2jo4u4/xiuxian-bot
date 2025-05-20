@@ -142,6 +142,34 @@ export const ItemList: ItemDefinition[] = [
   },
 ];
 
+// 名稱與ID對照表（簡易別名查詢）
+export const ItemAlias: Record<string, string> = {
+  回氣丹: "elixir_qi",
+  小還丹: "elixir_heal",
+  靈石: "spirit_stone",
+  破障符: "talisman_break",
+  傳送符: "talisman_tp",
+  靈木: "spirit_wood",
+  青鋒劍: "sword_qingfeng",
+  烈焰刀: "blade_lieyan",
+  靈甲: "armor_ling",
+  玄鐵盾: "shield_xuantie",
+  玉佩: "necklace_yupei",
+  靈戒: "ring_ling",
+  紫電葫蘆: "artifact_hulu",
+  乾坤袋: "artifact_bag",
+  飛劍: "artifact_flying_sword",
+  聚靈珠: "artifact_pearl",
+};
+
+// 依名稱或ID查找物品
+export function getItemByNameOrId(
+  nameOrId: string
+): ItemDefinition | undefined {
+  const id = ItemAlias[nameOrId] ?? nameOrId;
+  return getItemById(id);
+}
+
 export function getItemById(id: string): ItemDefinition | undefined {
   return ItemList.find((item) => item.id === id);
 }

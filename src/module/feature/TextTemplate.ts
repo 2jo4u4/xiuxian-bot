@@ -2,6 +2,7 @@ import { difference } from "../../deps.ts";
 import { CommandCtrl } from "./UserCommand.ts";
 import { UserCommand, CommandAlais } from "./Constants.ts";
 import type { UserRole } from "./UserRole.ts";
+import type { ItemDefinition } from "./ItemDefinitions.ts";
 const HelpDesc: Record<string, string> = {
   [UserCommand.建立角色]: "創建你的修仙角色",
   [UserCommand.狀態]: "查看當前的境界",
@@ -175,6 +176,33 @@ export const Template = {
       "\n";
     str += "> 目前已修練了 " + role.sofarTraning() + " 小時";
     str += "\n```";
+    return str;
+  },
+  /**
+   * 顯示背包與裝備欄內容
+   */
+  showBackpackAndEquipment(
+    backpack: ItemDefinition[],
+    equipment: Record<string, ItemDefinition | null>
+  ): string {
+    let str = "【背包】\n";
+    if (backpack.length === 0) {
+      str += "（空）\n";
+    } else {
+      str +=
+        backpack
+          .map((item) => `- ${item.name}（${item.id}，${item.rarity}）`)
+          .join("\n") + "\n";
+    }
+    str += "\n【裝備欄】\n";
+    for (const slot of Object.keys(equipment)) {
+      const item = equipment[slot];
+      if (item) {
+        str += `${slot}: ${item.name}（${item.id}，${item.rarity}）\n`;
+      } else {
+        str += `${slot}: 無\n`;
+      }
+    }
     return str;
   },
 };
