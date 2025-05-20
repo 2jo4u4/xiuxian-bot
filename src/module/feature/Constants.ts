@@ -73,15 +73,15 @@ export const CommandAlais: Record<string, UserCommand> = {
 
 // 境界對應經驗值表
 export const LevelExpTable: Record<LevelName, number> = {
-  [LevelName.練氣境]: 0,
-  [LevelName.築基境]: 100,
-  [LevelName.金丹境]: 300,
-  [LevelName.元嬰境]: 700,
-  [LevelName.化神境]: 1200,
-  [LevelName.煉虛境]: 7700,
-  [LevelName.合體境]: 24400,
-  [LevelName.大乘境]: 51200,
-  [LevelName.渡劫境]: 100000,
+  [LevelName.練氣境]: 0, // + 100
+  [LevelName.築基境]: 100, // + 300
+  [LevelName.金丹境]: 400, // + 600
+  [LevelName.元嬰境]: 1000, // + 1000
+  [LevelName.化神境]: 2000, // + 2000
+  [LevelName.煉虛境]: 4000, // + 4000
+  [LevelName.合體境]: 8000, // + 8000
+  [LevelName.大乘境]: 16000, // + 16000
+  [LevelName.渡劫境]: 32000,
 };
 
 export function getLevelByExp(exp: number): LevelName {
@@ -101,26 +101,44 @@ export function getBaseStatsByLevel(level: LevelName): {
   atk: number;
   def: number;
 } {
+  let ratio = 1;
   switch (level) {
     case LevelName.練氣境:
-      return { maxHp: 100, maxMp: 30, atk: 10, def: 5 };
+      ratio = 1;
+      break;
     case LevelName.築基境:
-      return { maxHp: 200, maxMp: 60, atk: 20, def: 10 };
+      ratio = 1.5;
+      break;
     case LevelName.金丹境:
-      return { maxHp: 400, maxMp: 120, atk: 40, def: 20 };
+      ratio = 3.5;
+      break;
     case LevelName.元嬰境:
-      return { maxHp: 800, maxMp: 240, atk: 80, def: 40 };
+      ratio = 5;
+      break;
     case LevelName.化神境:
-      return { maxHp: 1600, maxMp: 480, atk: 160, def: 80 };
+      ratio = 8;
+      break;
     case LevelName.煉虛境:
-      return { maxHp: 3200, maxMp: 960, atk: 320, def: 160 };
+      ratio = 16;
+      break;
     case LevelName.合體境:
-      return { maxHp: 6400, maxMp: 1920, atk: 640, def: 320 };
+      ratio = 24;
+      break;
     case LevelName.大乘境:
-      return { maxHp: 12800, maxMp: 3840, atk: 1280, def: 640 };
+      ratio = 32;
+      break;
     case LevelName.渡劫境:
-      return { maxHp: 25600, maxMp: 7680, atk: 2560, def: 1280 };
+      ratio = 48;
+      break;
     default:
-      return { maxHp: 100, maxMp: 30, atk: 10, def: 5 };
+      ratio = 1;
+      break;
   }
+
+  return {
+    maxHp: 100 * ratio,
+    maxMp: 30 * ratio,
+    atk: 10 * ratio,
+    def: 5 * ratio,
+  };
 }

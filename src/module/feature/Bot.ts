@@ -57,7 +57,6 @@ export async function botLoop() {
           const isCommand = commandCtrl.getCommandType(message.content);
           if (isCommand === null) return;
           const { command, p } = isCommand;
-          const parsed = commandCtrl.getSecondCommand(...p);
           const { authorId, channelId, tag } = message;
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
@@ -183,41 +182,44 @@ export async function botLoop() {
               bot.helpers.sendMessage(channelId, { content });
             },
             [UserCommand.使用道具]: () => {
+              const item_id: string | undefined = p[0];
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
-              } else if (!parsed?.itemId) {
+              } else if (!item_id) {
                 content = "請輸入要使用的道具ID。";
               } else {
-                const result = role.useItem(parsed.itemId);
+                const result = role.useItem(item_id);
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
             },
             [UserCommand.裝備]: () => {
+              const item_id: string | undefined = p[0];
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
-              } else if (!parsed?.itemId) {
+              } else if (!item_id) {
                 content = "請輸入要裝備的道具ID。";
               } else {
-                const result = role.equipItem(parsed.itemId);
+                const result = role.equipItem(item_id);
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
             },
             [UserCommand.卸下裝備]: () => {
+              const slot: string | undefined = p[0];
               const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
-              } else if (!parsed?.slot) {
+              } else if (!slot) {
                 content =
                   "請輸入要卸下的部位名稱（如 weapon/armor/ring/necklace）。";
               } else {
-                const result = role.unequip(parsed.slot);
+                const result = role.unequip(slot);
                 content = result.message;
               }
               bot.helpers.sendMessage(channelId, { content });
