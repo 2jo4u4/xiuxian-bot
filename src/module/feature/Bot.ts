@@ -290,7 +290,9 @@ export async function botLoop() {
               let msg = `你與「${monster.name}」展開戰鬥！\n`;
               msg += result.log ? result.log.join("\n") + "\n" : "";
               if (result.winner === "player") {
-                // 勝利給獎勵
+                // 勝利給獎勵，並寫回剩餘血量/法力
+                role.hp = result.playerHp;
+                // 若 BattleResult 沒有 mp，則直接不處理 mp
                 const reward = calculateReward(role, monster);
                 role.gainExp(reward.exp);
                 reward.items.forEach((item) => role.gainItem(item.id));
@@ -301,7 +303,15 @@ export async function botLoop() {
                     .join("、")}。`;
                 }
               } else {
-                msg += "你戰敗了，請再接再厲！";
+                // 失敗：扣 1% 經驗，血量/法力補滿
+                // 直接操作 private exp 需新增方法，這裡用 gainExp(-lostExp)
+                const expNow = role["exp"] ?? 0;
+                const lostExp = Math.floor(expNow * 0.01);
+                role.gainExp(-lostExp);
+                const state = role.getRoleState();
+                role.hp = state.maxHp;
+                role.mp = state.maxMp;
+                msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
               }
               playerEncounter.delete(key);
               bot.helpers.sendMessage(channelId, { content: msg });
