@@ -18,7 +18,7 @@ export class GamePlayer {
   readonly userId: bigint;
   readonly guildId: bigint;
   readonly createDate: string;
-  private exp: number;
+  exp: number;
   private training?: string;
   readonly log: ReturnType<typeof getLogger>;
   // 新增屬性

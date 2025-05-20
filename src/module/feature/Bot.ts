@@ -292,7 +292,7 @@ export async function botLoop() {
               if (result.winner === "player") {
                 // 勝利給獎勵，並寫回剩餘血量/法力
                 role.hp = result.playerHp;
-                // 若 BattleResult 沒有 mp，則直接不處理 mp
+                role.mp = result.playerMp;
                 const reward = calculateReward(role, monster);
                 role.gainExp(reward.exp);
                 reward.items.forEach((item) => role.gainItem(item.id));
@@ -304,9 +304,7 @@ export async function botLoop() {
                 }
               } else {
                 // 失敗：扣 1% 經驗，血量/法力補滿
-                // 直接操作 private exp 需新增方法，這裡用 gainExp(-lostExp)
-                const expNow = role["exp"] ?? 0;
-                const lostExp = Math.floor(expNow * 0.01);
+                const lostExp = Math.floor(role.exp * 0.01);
                 role.gainExp(-lostExp);
                 const state = role.getRoleState();
                 role.hp = state.maxHp;

@@ -6,6 +6,7 @@ import type { Monster } from "./Monster.ts";
 export interface BattleResult {
   winner: "player" | "monster";
   playerHp: number;
+  playerMp: number;
   monsterHp: number;
   log: string[];
 }
@@ -19,6 +20,8 @@ export interface BattleResult {
 export function battle(player: GamePlayer, monster: Monster): BattleResult {
   const playerStats = player.getRoleState();
   let playerHp = player.hp;
+  // deno-lint-ignore prefer-const
+  let playerMp = player.mp; // 新增: 法力
   let monsterHp = monster.hp;
   const log: string[] = [];
 
@@ -34,6 +37,8 @@ export function battle(player: GamePlayer, monster: Monster): BattleResult {
       playerHp -= monsterDmg;
       log.push(`${monster.name}對你造成了${monsterDmg}點傷害。`);
     }
+    // 若有法力消耗規則，可在此處調整 playerMp
+    // 例如: playerMp -= 0;
   }
 
   // 判斷勝負
@@ -54,6 +59,7 @@ export function battle(player: GamePlayer, monster: Monster): BattleResult {
   return {
     winner,
     playerHp: Math.max(playerHp, 0),
+    playerMp: Math.max(playerMp, 0),
     monsterHp: Math.max(monsterHp, 0),
     log,
   };
