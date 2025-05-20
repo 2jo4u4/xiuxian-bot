@@ -83,6 +83,8 @@ export const Template = {
         }
       })
       .join("");
+    str += "> 血量：" + role.hp + "\n";
+    str += "> 法力：" + role.mp + "\n";
     str += "> 靈根：" + rootNames + "靈根\n";
     str += "> 名聲：" + role.reputation + "\n";
     str += "> 資源：" + role.resources + "\n";
