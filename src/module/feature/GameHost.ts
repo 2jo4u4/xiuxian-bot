@@ -1,11 +1,11 @@
 import { getLogger } from "@std/log";
 import { database, RoleJson } from "./DataBase.ts";
-import { UserRole } from "./UserRole.ts";
+import { GamePlayer } from "./GamePlayer.ts";
 
 type GuildId = bigint;
 type UserId = bigint;
 export class GameHost {
-  guildMap: Map<GuildId, Map<UserId, UserRole>>;
+  guildMap: Map<GuildId, Map<UserId, GamePlayer>>;
   readonly log: ReturnType<typeof getLogger>;
   constructor() {
     this.guildMap = new Map();
@@ -20,7 +20,7 @@ export class GameHost {
   getGuild(guildId: GuildId) {
     return this.guildMap.get(guildId);
   }
-  getRole(guildId: GuildId, userId: UserId): UserRole | undefined {
+  getRole(guildId: GuildId, userId: UserId): GamePlayer | undefined {
     if (this.guildMap.has(guildId)) {
       return this.guildMap.get(guildId)!.get(userId);
     }
@@ -29,9 +29,9 @@ export class GameHost {
   createRole(guildId: GuildId, userId: UserId) {
     const role = this.getRole(guildId, userId);
     if (role) return role;
-    return new UserRole({ userId, guildId });
+    return new GamePlayer({ userId, guildId });
   }
-  addRole(role: UserRole) {
+  addRole(role: GamePlayer) {
     const guild = this.getGuild(role.guildId);
     if (guild) {
       guild.set(role.userId, role);
@@ -42,7 +42,7 @@ export class GameHost {
   injectUsers() {
     const users = database.readUsers();
     users.role.forEach(({ guildId, userId, ...state }) => {
-      const role = new UserRole({
+      const role = new GamePlayer({
         userId: BigInt(userId),
         guildId: BigInt(guildId),
         ...state,
@@ -57,7 +57,7 @@ export class GameHost {
       }, [] as RoleJson)
     );
   }
-  private userMap2json(map: Map<bigint, UserRole>) {
+  private userMap2json(map: Map<bigint, GamePlayer>) {
     const json: RoleJson = [];
     map.forEach((role) => {
       const data = role.toRole();

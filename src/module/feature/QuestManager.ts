@@ -1,12 +1,12 @@
 import { database, Quest, QuestOptions } from "./DataBase.ts";
-import { UserRole } from "./UserRole.ts";
+import { GamePlayer } from "./GamePlayer.ts";
 
 export class QuestManager {
   questBoard: QuestNode[];
   constructor() {
     this.questBoard = [];
   }
-  assignQuest(role: UserRole) {
+  assignQuest(role: GamePlayer) {
     const node = this.randomQuest();
     role.executeQuest = node;
     return node;
@@ -62,7 +62,7 @@ export class QuestNode {
 
     return this.isAnswered;
   }
-  onRoll(role: UserRole): boolean {
+  onRoll(role: GamePlayer): boolean {
     if (this.isAnswered) return false;
 
     if (this.type === "dice") {

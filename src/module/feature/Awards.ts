@@ -1,4 +1,4 @@
-import { UserRole } from "./UserRole.ts";
+import { GamePlayer } from "./GamePlayer.ts";
 import { LevelName, SpiritRootType } from "./Constants.ts";
 
 // 境界對應的基礎獎勵倍率
@@ -34,7 +34,7 @@ function spiritRootsBonus(roots: SpiritRootType[]): number {
 }
 
 // 計算玩家獎勵（如經驗、靈石等）
-export function calculateAward(role: UserRole, base: number): number {
+export function calculateAward(role: GamePlayer, base: number): number {
   const levelName = role.level.text;
   const levelMultiplier = LEVEL_AWARD_MULTIPLIER[levelName] ?? 1;
   const rootBonus = spiritRootsBonus(role.spiritRoots);

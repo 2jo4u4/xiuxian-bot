@@ -1,6 +1,6 @@
 // filepath: src/module/feature/Battle.ts
 
-import type { UserRole } from "./UserRole.ts";
+import type { GamePlayer } from "./GamePlayer.ts";
 import type { Monster } from "./Monster.ts";
 
 export interface BattleResult {
@@ -12,11 +12,11 @@ export interface BattleResult {
 
 /**
  * 進行單回合戰鬥（簡單物理攻防，無技能/閃避/暴擊）
- * @param player UserRole 實例
+ * @param player GamePlayer 實例
  * @param monster Monster 實例
  * @returns BattleResult
  */
-export function battle(player: UserRole, monster: Monster): BattleResult {
+export function battle(player: GamePlayer, monster: Monster): BattleResult {
   const playerStats = player.getRoleState();
   let playerHp = player.hp;
   let monsterHp = monster.hp;

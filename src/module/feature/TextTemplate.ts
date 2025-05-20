@@ -1,7 +1,7 @@
 import { difference } from "../../deps.ts";
 import { CommandCtrl } from "./UserCommand.ts";
 import { UserCommand, CommandAlais } from "./Constants.ts";
-import type { UserRole } from "./UserRole.ts";
+import type { GamePlayer } from "./GamePlayer.ts";
 import type { ItemDefinition } from "./ItemDefinitions.ts";
 const HelpDesc: Record<string, string> = {
   [UserCommand.建立角色]: "創建你的修仙角色",
@@ -60,7 +60,7 @@ export const Template = {
   createRole(userName: string) {
     return `天道之下，又逢一位欲逆天改命之人。${userName}。`;
   },
-  status(userName: string, role: UserRole) {
+  status(userName: string, role: GamePlayer) {
     let str = "```md\n";
     str += userName + " 的修仙之路\n";
     str += "> 目前境界 " + role.level.text + "\n";
@@ -163,7 +163,7 @@ export const Template = {
     str += "\n```";
     return str;
   },
-  duringTraining(role: UserRole) {
+  duringTraining(role: GamePlayer) {
     let str = "```md\n";
     str += "> 正在閉關中，請先出關 ";
     str +=
