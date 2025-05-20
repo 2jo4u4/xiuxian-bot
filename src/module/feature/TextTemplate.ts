@@ -1,16 +1,8 @@
 import { difference } from "../../deps.ts";
 import { CommandCtrl } from "./UserCommand.ts";
-import { UserCommand, CommandAlais } from "./Constants.ts";
+import { UserCommand } from "./Constants.ts";
 import type { GamePlayer } from "./GamePlayer.ts";
 import type { ItemDefinition } from "./ItemDefinitions.ts";
-const HelpDesc: Record<string, string> = {
-  [UserCommand.建立角色]: "創建你的修仙角色",
-  [UserCommand.狀態]: "查看當前的境界",
-  [UserCommand.接受任務]: "接受一個隨機任務",
-  [UserCommand.取消任務]: "放棄當前的任務",
-  [UserCommand.閉關]: "開始記錄閉關時間，並於結束閉關獲得經驗值",
-  [UserCommand.閉關結束]: "結算閉關時間，並獲得獲得經驗值",
-};
 
 export const Template = {
   sayHi() {
@@ -18,31 +10,25 @@ export const Template = {
     return str;
   },
   help() {
-    let str =
-      "```md\n" +
-      `> 請使用 ${CommandCtrl.prefix}${CommandCtrl.keyword} 作為指令前墜\n` +
-      "> 可替換為: ";
-
-    CommandCtrl.keywords.forEach((keyword, index) => {
-      if (index !== 0) {
-        str += " | ";
-      }
-      str += CommandCtrl.prefix + keyword;
-    });
-
-    str += "\n\n";
-    let index = 1;
-    Object.keys(CommandAlais).forEach((key) => {
-      const desc = HelpDesc[CommandAlais[key]];
-      if (desc) {
-        str += index + ". " + key + ": " + desc;
-        str += "\n";
-        index++;
-      }
-    });
-
-    str += "```";
-    return str;
+    // 指令說明
+    return [
+      "【修仙 Bot 指令說明】",
+      "- %修仙 幫助/help：顯示所有指令說明",
+      "- %修仙 建立角色/create：創建你的修仙角色",
+      "- %修仙 狀態/status：查看當前角色狀態",
+      "- %修仙 接受任務/quest：接受一個隨機任務",
+      "- %修仙 取消任務/cancel：放棄當前任務",
+      "- %修仙 閉關/training：開始閉關修練",
+      "- %修仙 閉關結束/trainingQuit：結束閉關並獲得經驗",
+      "- %修仙 使用/use <道具ID或名稱>：使用背包中的道具",
+      "- %修仙 裝備/equip <裝備ID或名稱>：裝備背包中的裝備/法寶",
+      "- %修仙 卸下/unequip <部位>：卸下指定部位的裝備",
+      "- %修仙 查看背包/backpack/bag：查看背包與裝備欄",
+      "- %修仙 搜尋敵人/search：隨機遭遇一隻魔物",
+      "- %修仙 戰鬥/fight：與遭遇的魔物戰鬥",
+      "- %修仙 逃跑/flee：逃離當前遭遇的魔物",
+      "- %修仙 搜尋並戰鬥/searchfight/searchAndFight：自動搜尋並立即戰鬥",
+    ].join("\n");
   },
   noHasRole() {
     const str =
