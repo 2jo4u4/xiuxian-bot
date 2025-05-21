@@ -1,3 +1,4 @@
+import { getLogger } from "jsr:@std/log";
 import "jsr:@std/dotenv/load";
 import {
   ButtonComponent,
@@ -8,6 +9,7 @@ import {
   MessageComponentTypes,
   startBot,
 } from "../../deps.ts";
+import type { Bot } from "../../deps.ts";
 import { CommandCtrl } from "./UserCommand.ts";
 import { UserCommand } from "./Constants.ts";
 import { GameHost } from "./GameHost.ts";
@@ -19,7 +21,7 @@ import { battle } from "./Battle.ts";
 
 // 玩家臨時遭遇怪物暫存（型別明確）
 const playerEncounter: Map<string, Monster> = new Map();
-
+const log = getLogger("Bot");
 const symbolCustomId = ", ";
 function createBtnCustomId(...ss: string[]) {
   return ss.reduce((prev, curr, index) => {
@@ -29,6 +31,62 @@ function createBtnCustomId(...ss: string[]) {
 }
 function splitBtnCustomId(s: string) {
   return s.split(symbolCustomId);
+}
+
+// 安全包裝發送訊息，防止權限錯誤導致服務終止
+async function safeSendMessage(
+  bot: Bot,
+  channelId: bigint,
+  payload: Record<string, unknown>
+) {
+  try {
+    await bot.helpers.sendMessage(channelId, payload);
+  } catch (e) {
+    let msg = "";
+    if (
+      typeof e === "object" &&
+      e !== null &&
+      "message" in e &&
+      typeof (e as { message: unknown }).message === "string"
+    ) {
+      msg = (e as { message: string }).message;
+    } else {
+      msg = String(e);
+    }
+    if (msg.includes("Missing Permissions")) {
+      log.warn("Bot 沒有權限在此頻道發言");
+    } else {
+      log.error("sendMessage error:", e);
+    }
+  }
+}
+
+// 安全包裝刪除訊息，防止權限錯誤導致服務終止
+async function safeDeleteMessage(
+  bot: Bot,
+  channelId: bigint,
+  messageId: bigint
+) {
+  try {
+    await bot.helpers.deleteMessage(channelId, messageId);
+  } catch (e) {
+    let msg = "";
+    if (
+      typeof e === "object" &&
+      e !== null &&
+      "message" in e &&
+      typeof (e as { message: unknown }).message === "string"
+    ) {
+      msg = (e as { message: string }).message;
+    } else {
+      msg = String(e);
+    }
+    if (msg.includes("Missing Permissions")) {
+      log.warn("Bot 沒有權限刪除此頻道訊息");
+    } else {
+      log.error("deleteMessage error:", e);
+    }
+  }
 }
 
 export async function botLoop() {
@@ -48,7 +106,7 @@ export async function botLoop() {
       intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent,
       events: {
         ready() {
-          console.log("Successfully connected to gateway");
+          log.info("Successfully connected to gateway");
         },
         // guildCreate(bot, guild) {
         //   const defaultChannel = guild.channels.find(
@@ -66,20 +124,23 @@ export async function botLoop() {
           if (isCommand === null) return;
           const { command, p } = isCommand;
           const { authorId, channelId, tag } = message;
-          // guildId 需轉 bigint
-          const guildId = BigInt(message.guildId ?? 0);
+          /**
+           * 不因有不同伺服器(公會)而有不同角色。
+           *
+           * 保留此參數為相容既有程式碼。
+           */
+          const guildId = 0n;
           const userId = BigInt(authorId);
-          console.log(userId);
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
           const commandHandlers: Record<UserCommand, () => void> = {
             [UserCommand.幫助]: () => {
-              bot.helpers.sendMessage(channelId, { content: Template.help() });
+              safeSendMessage(bot, channelId, { content: Template.help() });
             },
             [UserCommand.建立角色]: () => {
               const role = game.createRole(guildId, authorId);
               game.addRole(role);
-              bot.helpers.sendMessage(channelId, {
+              safeSendMessage(bot, channelId, {
                 content: Template.createRole(tag),
               });
             },
@@ -89,7 +150,7 @@ export async function botLoop() {
                 role === undefined
                   ? Template.noHasRole()
                   : Template.status(tag, role);
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.接受任務]: () => {
               const role = game.getRole(guildId, authorId);
@@ -130,7 +191,7 @@ export async function botLoop() {
                   });
                 });
                 content = Template.questDesc(quest.title, quest.desc, tag);
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content,
                   components: [
                     {
@@ -141,15 +202,15 @@ export async function botLoop() {
                 });
                 return;
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.丟骰子]: () => {
-              bot.helpers.sendMessage(channelId, {
+              safeSendMessage(bot, channelId, {
                 content: Template.unavailableCommand(),
               });
             },
             [UserCommand.回覆任務]: () => {
-              bot.helpers.sendMessage(channelId, {
+              safeSendMessage(bot, channelId, {
                 content: Template.unavailableCommand(),
               });
             },
@@ -157,14 +218,14 @@ export async function botLoop() {
               const role = game.getRole(guildId, authorId);
               if (role && role.executeQuest !== null) {
                 const content = Template.giveupQuest(role.executeQuest.title);
-                bot.helpers.sendMessage(channelId, { content });
+                safeSendMessage(bot, channelId, { content });
                 role.executeQuest = null;
               } else {
                 const content =
                   role === undefined
                     ? Template.noHasRole()
                     : Template.noHasQuest();
-                bot.helpers.sendMessage(channelId, { content });
+                safeSendMessage(bot, channelId, { content });
               }
             },
             [UserCommand.閉關]: () => {
@@ -178,7 +239,7 @@ export async function botLoop() {
                 role.starTraining();
                 content = Template.starTraining(tag);
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.閉關結束]: () => {
               const role = game.getRole(guildId, authorId);
@@ -191,7 +252,7 @@ export async function botLoop() {
                 const hours = role.overTraining();
                 content = Template.overTraining(tag, hours);
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.使用道具]: () => {
               const item_id: string | undefined = p[0];
@@ -205,7 +266,7 @@ export async function botLoop() {
                 const result = role.useItem(item_id);
                 content = result.message;
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.裝備]: () => {
               const item_id: string | undefined = p[0];
@@ -219,7 +280,7 @@ export async function botLoop() {
                 const result = role.equipItem(item_id);
                 content = result.message;
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.卸下裝備]: () => {
               const slot: string | undefined = p[0];
@@ -234,7 +295,7 @@ export async function botLoop() {
                 const result = role.unequip(slot);
                 content = result.message;
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.查看背包]: () => {
               const role = game.getRole(guildId, authorId);
@@ -249,7 +310,7 @@ export async function botLoop() {
                   equipmentDetails
                 );
               }
-              bot.helpers.sendMessage(channelId, { content });
+              safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.保存所有使用者]: () => {
               if (hasAdmin && admin === userId) {
@@ -265,21 +326,21 @@ export async function botLoop() {
             [UserCommand.搜尋敵人]: () => {
               const role = game.getRole(guildId, userId);
               if (!role) {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: Template.noHasRole(),
                 });
                 return;
               }
               const monster = getRandomMonsterByPlayerLevel(role.level.text);
               playerEncounter.set(`${role.guildId}_${role.userId}`, monster);
-              bot.helpers.sendMessage(channelId, {
+              safeSendMessage(bot, channelId, {
                 content: `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`,
               });
             },
             [UserCommand.戰鬥]: () => {
               const role = game.getRole(guildId, userId);
               if (!role) {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: Template.noHasRole(),
                 });
                 return;
@@ -287,7 +348,7 @@ export async function botLoop() {
               const key = `${role.guildId}_${role.userId}`;
               const monster = playerEncounter.get(key);
               if (!monster) {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: "你目前沒有遇到任何敵人，請先『搜尋敵人』。",
                 });
                 return;
@@ -319,12 +380,12 @@ export async function botLoop() {
                 msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
               }
               playerEncounter.delete(key);
-              bot.helpers.sendMessage(channelId, { content: msg });
+              safeSendMessage(bot, channelId, { content: msg });
             },
             [UserCommand.逃跑]: () => {
               const role = game.getRole(guildId, userId);
               if (!role) {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: Template.noHasRole(),
                 });
                 return;
@@ -332,11 +393,11 @@ export async function botLoop() {
               const key = `${role.guildId}_${role.userId}`;
               if (playerEncounter.has(key)) {
                 playerEncounter.delete(key);
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: "你選擇了逃跑，暫時脫離了危險。",
                 });
               } else {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: "你目前沒有遇到任何敵人。",
                 });
               }
@@ -344,7 +405,7 @@ export async function botLoop() {
             [UserCommand.搜尋並戰鬥]: () => {
               const role = game.getRole(guildId, userId);
               if (!role) {
-                bot.helpers.sendMessage(channelId, {
+                safeSendMessage(bot, channelId, {
                   content: Template.noHasRole(),
                 });
                 return;
@@ -376,7 +437,7 @@ export async function botLoop() {
                 role.mp = state.maxMp;
                 msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
               }
-              bot.helpers.sendMessage(channelId, { content: msg });
+              safeSendMessage(bot, channelId, { content: msg });
             },
           };
 
@@ -384,7 +445,7 @@ export async function botLoop() {
             commandHandlers[command as UserCommand]!();
           } else {
             const content = Template.unavailableCommand();
-            bot.helpers.sendMessage(channelId, { content });
+            safeSendMessage(bot, channelId, { content });
           }
         },
         interactionCreate(bot, interaction) {
@@ -416,11 +477,12 @@ export async function botLoop() {
                 role.executeQuest.onAnswer(customId);
               }
               if (role.executeQuest.anser) {
-                bot.helpers.deleteMessage(
+                safeDeleteMessage(
+                  bot,
                   interaction.channelId!,
                   interaction.message!.id
                 );
-                bot.helpers.sendMessage(interaction.channelId!, {
+                safeSendMessage(bot, interaction.channelId!, {
                   content: Template.chooseQuestOption(
                     role.executeQuest.title,
                     role.executeQuest.desc,
