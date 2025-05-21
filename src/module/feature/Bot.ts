@@ -100,7 +100,12 @@ export async function botLoop() {
   const hasAdmin = Deno.env.get("MANAGER") !== undefined;
   const admin = BigInt(Deno.env.get("MANAGER")!);
   if (token !== undefined) {
-    const guildId = BigInt(0);
+    /**
+     * 不因有不同伺服器(公會)而有不同角色。
+     *
+     * 保留此參數為相容既有程式碼。
+     */
+    const guildId = 0n;
     const bot = createBot({
       token,
       intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent,
@@ -124,12 +129,7 @@ export async function botLoop() {
           if (isCommand === null) return;
           const { command, p } = isCommand;
           const { authorId, channelId, tag } = message;
-          /**
-           * 不因有不同伺服器(公會)而有不同角色。
-           *
-           * 保留此參數為相容既有程式碼。
-           */
-          const guildId = 0n;
+
           const userId = BigInt(authorId);
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
