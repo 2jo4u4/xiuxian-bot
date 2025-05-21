@@ -48,7 +48,7 @@ Deno.test("Battle: 玩家與魔物單回合戰鬥", () => {
   const role = new GamePlayer({ userId: 4n, guildId: 1n });
   const monster = { ...MonsterList[0] };
   const result = battle(role, monster);
-  assert(["player", "monster"].includes(result.winner));
+  assert(typeof result.isWin === "boolean");
   assert(typeof result.playerHp === "number");
   assert(typeof result.monsterHp === "number");
 });

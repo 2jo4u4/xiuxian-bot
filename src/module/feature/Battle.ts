@@ -4,7 +4,7 @@ import type { GamePlayer } from "./GamePlayer.ts";
 import type { Monster } from "./Monster.ts";
 
 export interface BattleResult {
-  winner: "player" | "monster";
+  isWin: boolean;
   playerHp: number;
   playerMp: number;
   monsterHp: number;
@@ -42,22 +42,22 @@ export function battle(player: GamePlayer, monster: Monster): BattleResult {
   }
 
   // 判斷勝負
-  let winner: "player" | "monster";
+  let isWin: boolean;
   if (monsterHp <= 0 && playerHp > 0) {
-    winner = "player";
+    isWin = true;
     log.push(`你擊敗了${monster.name}！`);
   } else if (playerHp <= 0 && monsterHp > 0) {
-    winner = "monster";
+    isWin = false;
     log.push(`你被${monster.name}擊敗了……`);
   } else if (playerHp <= 0 && monsterHp <= 0) {
-    winner = "player"; // 同歸於盡視為玩家勝
+    isWin = true; // 同歸於盡視為玩家勝
     log.push(`你與${monster.name}同歸於盡！`);
   } else {
-    winner = playerHp > monsterHp ? "player" : "monster";
+    isWin = playerHp > monsterHp;
   }
 
   return {
-    winner,
+    isWin,
     playerHp: Math.max(playerHp, 0),
     playerMp: Math.max(playerMp, 0),
     monsterHp: Math.max(monsterHp, 0),

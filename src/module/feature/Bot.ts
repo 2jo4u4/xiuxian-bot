@@ -350,7 +350,7 @@ export async function botLoop() {
               const result = battle(role, monster);
               let msg = `你與「${monster.name}」展開戰鬥！\n`;
               msg += result.log ? result.log.join("\n") + "\n" : "";
-              if (result.winner === "player") {
+              if (result.isWin) {
                 // 勝利給獎勵，並寫回剩餘血量/法力
                 role.hp = result.playerHp;
                 role.mp = result.playerMp;
@@ -410,7 +410,7 @@ export async function botLoop() {
               let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
               msg += `你與「${monster.name}」展開戰鬥！\n`;
               msg += result.log ? result.log.join("\n") + "\n" : "";
-              if (result.winner === "player") {
+              if (result.isWin) {
                 role.hp = result.playerHp;
                 role.mp = result.playerMp;
                 const reward = calculateReward(role, monster);
