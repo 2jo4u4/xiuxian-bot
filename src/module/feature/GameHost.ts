@@ -41,10 +41,17 @@ export class GameHost {
   }
   injectUsers() {
     const users = database.readUsers();
-    users.role.forEach(({ guildId, userId, ...state }) => {
+    users.role.forEach(({ guildId, userId, equipment, ...state }) => {
+      const equipmentRecord: Record<string, string | null> = {};
+      if (equipment instanceof Map) {
+        equipment.forEach((value, key) => {
+          equipmentRecord[key] = value;
+        });
+      }
       const role = new GamePlayer({
         userId: BigInt(userId),
         guildId: BigInt(guildId),
+        equipment: equipmentRecord,
         ...state,
       });
       this.addRole(role);

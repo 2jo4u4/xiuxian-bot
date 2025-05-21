@@ -129,8 +129,8 @@ export async function botLoop() {
           if (isCommand === null) return;
           const { command, p } = isCommand;
           const { authorId, channelId, tag } = message;
-
           const userId = BigInt(authorId);
+          const role = game.getRole(guildId, authorId);
 
           // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
           const commandHandlers: Record<UserCommand, () => void> = {
@@ -138,14 +138,15 @@ export async function botLoop() {
               safeSendMessage(bot, channelId, { content: Template.help() });
             },
             [UserCommand.建立角色]: () => {
-              const role = game.createRole(guildId, authorId);
-              game.addRole(role);
+              if (role === undefined) {
+                const role = game.createRole(guildId, authorId);
+                game.addRole(role);
+              }
               safeSendMessage(bot, channelId, {
                 content: Template.createRole(tag),
               });
             },
             [UserCommand.狀態]: () => {
-              const role = game.getRole(guildId, authorId);
               const content =
                 role === undefined
                   ? Template.noHasRole()
@@ -153,7 +154,6 @@ export async function botLoop() {
               safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.接受任務]: () => {
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -215,7 +215,6 @@ export async function botLoop() {
               });
             },
             [UserCommand.取消任務]: () => {
-              const role = game.getRole(guildId, authorId);
               if (role && role.executeQuest !== null) {
                 const content = Template.giveupQuest(role.executeQuest.title);
                 safeSendMessage(bot, channelId, { content });
@@ -229,7 +228,6 @@ export async function botLoop() {
               }
             },
             [UserCommand.閉關]: () => {
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -242,7 +240,6 @@ export async function botLoop() {
               safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.閉關結束]: () => {
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -256,7 +253,6 @@ export async function botLoop() {
             },
             [UserCommand.使用道具]: () => {
               const item_id: string | undefined = p[0];
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -270,7 +266,6 @@ export async function botLoop() {
             },
             [UserCommand.裝備]: () => {
               const item_id: string | undefined = p[0];
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -284,7 +279,6 @@ export async function botLoop() {
             },
             [UserCommand.卸下裝備]: () => {
               const slot: string | undefined = p[0];
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
@@ -298,7 +292,6 @@ export async function botLoop() {
               safeSendMessage(bot, channelId, { content });
             },
             [UserCommand.查看背包]: () => {
-              const role = game.getRole(guildId, authorId);
               let content = "";
               if (role === undefined) {
                 content = Template.noHasRole();
