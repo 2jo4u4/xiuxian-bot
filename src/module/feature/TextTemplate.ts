@@ -28,6 +28,9 @@ export const Template = {
       "- %修仙 戰鬥/fight：與遭遇的魔物戰鬥",
       "- %修仙 逃跑/flee：逃離當前遭遇的魔物",
       "- %修仙 搜尋並戰鬥/searchfight/searchAndFight：自動搜尋並立即戰鬥",
+      "- %修仙 故事模式/story：開始互動式修仙劇情（可重複體驗）",
+      "- %修仙 故事選擇/storypick <編號>：選擇故事選項，推進劇情",
+      "- %修仙 故事進度/storystate：查詢目前故事進度",
     ].join("\n");
   },
   noHasRole() {

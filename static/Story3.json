@@ -1,0 +1,204 @@
+{
+  "scene_ancient_tablet": {
+    "id": "scene_ancient_tablet",
+    "title": "古老石碑下的秘聞",
+    "description": "你在執行一次探索任務時，發現了一處被時間遺忘的古老廢墟。廢墟中央矗立著一面殘破的石碑，上面刻著奇特的符文，似乎隱藏著某些古老的秘密。",
+    "options": [
+      {
+        "id": "option_read_tablet",
+        "text": "嘗試解讀石碑上的符文。",
+        "nextSceneId": "scene_celestial_alliance_plot",
+        "outcomeText": "你讀懂了部分符文，得知仙盟內部存在一個與上古神器相關的秘密結社。"
+      },
+      {
+        "id": "option_ignore_tablet",
+        "text": "認為是無意義的遺跡，直接離開。",
+        "nextSceneId": "scene_peaceful_cultivation",
+        "outcomeText": "你選擇離開，錯過了潛在的機緣，但避免了捲入未知的麻煩。"
+      },
+      {
+        "id": "option_report_tablet",
+        "text": "向宗門或仙盟報告此發現。",
+        "nextSceneId": "scene_alliance_investigation",
+        "outcomeText": "你的報告引起了仙盟的注意，他們派人前來調查，你也被捲入其中。"
+      }
+    ],
+    "isStartingScene": true
+  },
+  "scene_peaceful_cultivation": {
+    "id": "scene_peaceful_cultivation",
+    "title": "平凡的修仙路",
+    "description": "你繼續著平靜的修仙生活，遠離了凡塵紛擾和權力鬥爭。雖然沒有驚天機緣，但也一步步穩健提升實力。",
+    "options": [
+      {
+        "id": "option_end_peace",
+        "text": "遊戲結束：你選擇了平靜的修仙生活，最終修為有成，逍遙自在。",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_alliance_investigation": {
+    "id": "scene_alliance_investigation",
+    "title": "仙盟的調查與招攬",
+    "description": "仙盟對你的發現很感興趣，派出了數位長老前來廢墟。他們在確認情報後，對你的資質和敏銳性給予肯定，並邀請你加入仙盟核心進行進一步調查。",
+    "options": [
+      {
+        "id": "option_join_alliance",
+        "text": "接受邀請，加入仙盟核心調查。",
+        "nextSceneId": "scene_celestial_alliance_plot",
+        "outcomeText": "你加入了仙盟，開始接觸到更多核心機密。"
+      },
+      {
+        "id": "option_decline_alliance",
+        "text": "婉拒邀請，選擇獨自行動。",
+        "nextSceneId": "scene_independent_pursuit",
+        "outcomeText": "你選擇獨自追尋真相，但仙盟對你仍有所提防。"
+      }
+    ]
+  },
+  "scene_celestial_alliance_plot": {
+    "id": "scene_celestial_alliance_plot",
+    "title": "仙盟內部的陰謀",
+    "description": "無論是透過解讀石碑還是加入仙盟，你都發現了一個驚人的陰謀：仙盟內部的一個秘密組織正企圖利用上古神器來掌控修仙界，甚至不惜犧牲無辜生靈。",
+    "options": [
+      {
+        "id": "option_expose_plot",
+        "text": "收集證據，揭露仙盟的陰謀。",
+        "nextSceneId": "scene_internal_strife_expose",
+        "outcomeText": "你開始秘密收集證據，準備將真相公之於眾。"
+      },
+      {
+        "id": "option_join_plot",
+        "text": "假意配合，試圖從內部瓦解他們。",
+        "nextSceneId": "scene_internal_strife_infiltrate",
+        "outcomeText": "你表面上服從，暗地裡尋找機會，步步為營。"
+      },
+      {
+        "id": "option_abandon_plot",
+        "text": "感到事態複雜，選擇抽身而退，獨自尋找神器。",
+        "nextSceneId": "scene_independent_pursuit",
+        "outcomeText": "你決定不再捲入權力鬥爭，轉而專注於尋找上古神器。"
+      }
+    ]
+  },
+  "scene_internal_strife_expose": {
+    "id": "scene_internal_strife_expose",
+    "title": "真相的代價",
+    "description": "你的證據引發了仙盟內部的巨大震盪，正邪勢力展開激烈的鬥爭。你站在風口浪尖，成為眾矢之的，但也得到了部分正義之士的支持。",
+    "options": [
+      {
+        "id": "option_expose_fight",
+        "text": "堅定信念，與陰謀者決戰。",
+        "nextSceneId": "scene_final_battle_alliance_civil_war",
+        "outcomeText": "你投入戰鬥，為正義而戰。"
+      }
+    ]
+  },
+  "scene_internal_strife_infiltrate": {
+    "id": "scene_internal_strife_infiltrate",
+    "title": "臥底的艱難",
+    "description": "你臥底在秘密組織內部，收集到了更多核心情報。但組織對你的信任逐漸加深，也讓你面臨更嚴峻的考驗，甚至可能被要求執行違背本心的任務。",
+    "options": [
+      {
+        "id": "option_infiltrate_betray",
+        "text": "關鍵時刻反戈一擊，破壞他們的計劃。",
+        "nextSceneId": "scene_final_battle_alliance_betrayal",
+        "outcomeText": "你撕下偽裝，給予敵人致命一擊。"
+      },
+      {
+        "id": "option_infiltrate_deepen",
+        "text": "繼續深入，獲取上古神器的確切位置。",
+        "nextSceneId": "scene_independent_pursuit_with_info",
+        "outcomeText": "你冒險深入，成功探聽到了神器的下落。"
+      }
+    ]
+  },
+  "scene_independent_pursuit": {
+    "id": "scene_independent_pursuit",
+    "title": "獨自追尋神器",
+    "description": "你決定不再依賴任何勢力，獨自踏上追尋上古神器的道路。旅途艱辛，你可能需要尋找古籍、破解謎題、或是穿越險境。",
+    "options": [
+      {
+        "id": "option_pursuit_discover",
+        "text": "追尋線索，最終找到上古神器的藏匿之地。",
+        "nextSceneId": "scene_final_battle_artifact_guardian",
+        "outcomeText": "你經過重重險阻，終於來到了神器的面前。"
+      }
+    ]
+  },
+  "scene_independent_pursuit_with_info": {
+    "id": "scene_independent_pursuit_with_info",
+    "title": "掌握線索，奪取神器",
+    "description": "你憑藉臥底獲得的精確情報，避開了許多彎路，直接鎖定了上古神器的藏匿之地。但敵人也可能察覺到你的意圖，正佈下天羅地網。",
+    "options": [
+      {
+        "id": "option_pursuit_with_info_claim",
+        "text": "利用情報優勢，直接奪取神器。",
+        "nextSceneId": "scene_final_battle_artifact_guardian",
+        "outcomeText": "你直接潛入，準備奪取神器，但守護者早已等待。"
+      }
+    ]
+  },
+  "scene_final_battle_alliance_civil_war": {
+    "id": "scene_final_battle_alliance_civil_war",
+    "title": "仙盟內戰：撥亂反正",
+    "description": "你與仙盟中的正義力量聯手，與那些企圖掌控修仙界的陰謀者展開了全面戰爭。這場內戰動搖了仙盟的根基，但最終邪不勝正。",
+    "options": [
+      {
+        "id": "option_end_civil_war_victory",
+        "text": "遊戲結束：你成功撥亂反正，仙盟重回正軌，你成為了新的領袖。",
+        "nextSceneId": null,
+        "outcomeText": "你力挽狂瀾，拯救了仙盟，但也肩負起重建秩序的重任。"
+      },
+      {
+        "id": "option_end_civil_war_sacrifice",
+        "text": "遊戲結束：你雖戰勝了陰謀者，但也付出了巨大的代價，選擇隱退。",
+        "nextSceneId": null,
+        "outcomeText": "你精疲力盡，選擇功成身退，將未來交給後來者。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_alliance_betrayal": {
+    "id": "scene_final_battle_alliance_betrayal",
+    "title": "臥底反擊：神器易主",
+    "description": "在關鍵時刻，你對秘密組織發動了致命的反擊，破壞了他們啟動上古神器的計劃。組織高層震怒，與你展開決戰，而神器的力量也因此暴走。",
+    "options": [
+      {
+        "id": "option_end_betrayal_control",
+        "text": "遊戲結束：你成功奪取並控制了上古神器，成為修仙界新的變數。",
+        "nextSceneId": null,
+        "outcomeText": "你掌握了神器，力量足以改變格局，但這也意味著你將面對來自各方的覬覦。"
+      },
+      {
+        "id": "option_end_betrayal_destroy",
+        "text": "遊戲結束：你選擇摧毀上古神器，結束這場紛爭，但自身也受到重創。",
+        "nextSceneId": null,
+        "outcomeText": "神器被毀，紛爭平息，但你因反噬而修為大損，從此淡出修仙界。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_artifact_guardian": {
+    "id": "scene_final_battle_artifact_guardian",
+    "title": "神器守護者的考驗",
+    "description": "你終於來到了上古神器面前，但神器被強大的上古守護者所保護。守護者不會輕易讓外人觸碰神器，你必須證明自己有資格。",
+    "options": [
+      {
+        "id": "option_end_guardian_prove",
+        "text": "遊戲結束：你通過了守護者的考驗，獲得了上古神器的認可與力量。",
+        "nextSceneId": null,
+        "outcomeText": "你證明了道心與實力，神器臣服於你，你將用它來造福天下或開創屬於自己的紀元。"
+      },
+      {
+        "id": "option_end_guardian_fail",
+        "text": "遊戲結束：你未能通過守護者的考驗，被其擊敗，命喪當場。",
+        "nextSceneId": null,
+        "outcomeText": "你雖然找到了神器，但最終功虧一簣，道消身隕，成為傳說中的遺憾。"
+      }
+    ],
+    "isEndingScene": true
+  }
+}

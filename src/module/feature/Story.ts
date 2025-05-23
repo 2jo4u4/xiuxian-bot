@@ -2,7 +2,7 @@
 interface GameOption {
   id: string; // 選項的唯一識別符，例如 "option1_1"
   text: string; // 顯示給玩家的選項文字
-  nextSceneId?: string; // 選擇此選項後將跳轉到的下一個場景ID (如果沒有則表示遊戲結束或進入特定結局)
+  nextSceneId?: string | null; // 選擇此選項後將跳轉到的下一個場景ID
   outcomeText: string; // 選擇此選項後的簡短結果描述
 }
 
@@ -12,7 +12,8 @@ interface GameScene {
   title: string; // 場景標題
   description: string; // 場景的主要描述文字
   options: GameOption[]; // 該場景提供的選項列表
-  isEnd?: boolean;
+  isStartingScene?: boolean; // 是否為起始場景
+  isEndingScene?: boolean; // 是否為結局場景
 }
 
 // 定義整個遊戲故事的介面 (所有場景的集合)
@@ -47,8 +48,10 @@ export class StoryEngine {
   constructor(story: GameStory, initialState?: Partial<GameState>) {
     this.story = story;
     // 初始化狀態
+    const startSceneId = initialState?.currentSceneId ?? Object.keys(story)[0];
+
     this.state = {
-      currentSceneId: initialState?.currentSceneId || Object.keys(story)[0],
+      currentSceneId: startSceneId,
       playerStats: initialState?.playerStats || {
         strength: 0,
         intelligence: 0,
@@ -88,11 +91,8 @@ export class StoryEngine {
 
   // 是否已到結局（無可選選項或所有選項都無 nextSceneId）
   isEnd(): boolean {
-    const scene = this.getCurrentScene();
-    return (
-      scene.isEnd ||
-      scene.options.length === 0 ||
-      scene.options.every((opt) => !opt.nextSceneId)
-    );
+    return this.getCurrentScene().isEndingScene ?? false;
   }
 }
+
+export type { GameStory };

@@ -1,0 +1,203 @@
+{
+  "scene_border_village": {
+    "id": "scene_border_village",
+    "title": "邊境村落的哀鳴",
+    "description": "你雲遊四方，來到一處人妖兩族交界的邊境村落。村落飽受妖獸侵擾之苦，村民生活困頓，面露恐懼。你感受到一股濃重的怨氣與悲傷。",
+    "options": [
+      {
+        "id": "option_help_villagers",
+        "text": "施展法術，擊退侵擾的妖獸，幫助村民。",
+        "nextSceneId": "scene_demon_den_investigate",
+        "outcomeText": "你成功擊退了妖獸，村民對你感恩戴德，並請求你深入調查妖患源頭。"
+      },
+      {
+        "id": "option_observe_conflict",
+        "text": "暗中觀察，了解人妖衝突的深層原因。",
+        "nextSceneId": "scene_ancient_forest_rumor",
+        "outcomeText": "你發現妖獸的行為似乎有些異常，這背後可能另有隱情。"
+      },
+      {
+        "id": "option_avoid_conflict",
+        "text": "修仙者不應過多干預凡俗，選擇離開。",
+        "nextSceneId": "scene_cultivation_journey_alone",
+        "outcomeText": "你選擇離開，避免了凡俗紛爭，但也錯失了介入兩族命運的機會。"
+      }
+    ],
+    "isStartingScene": true
+  },
+  "scene_cultivation_journey_alone": {
+    "id": "scene_cultivation_journey_alone",
+    "title": "孤獨的修行之路",
+    "description": "你繼續獨自的修仙旅程，不再被世俗的紛爭所擾。雖然實力穩步增長，但心中總覺得少了些什麼。",
+    "options": [
+      {
+        "id": "option_end_alone",
+        "text": "遊戲結束：你獨自修煉成仙，但世間紛爭仍未平息。",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_demon_den_investigate": {
+    "id": "scene_demon_den_investigate",
+    "title": "妖獸巢穴的異變",
+    "description": "你追蹤妖獸的痕跡，來到一片陰森的密林深處，發現了一個異常龐大的妖獸巢穴。巢穴中瀰漫著詭異的氣息，遠超一般妖獸的範疇。",
+    "options": [
+      {
+        "id": "option_enter_den",
+        "text": "深入巢穴，探查異變的根源。",
+        "nextSceneId": "scene_demon_source_uncover",
+        "outcomeText": "你進入巢穴，發現了令人不安的真相。"
+      },
+      {
+        "id": "option_report_den",
+        "text": "返回村落，向村長報告並尋求支援。",
+        "nextSceneId": "scene_human_alliance_mobilize",
+        "outcomeText": "你返回村落，村民們得知情況後，決定向附近的人族仙門求援。"
+      }
+    ]
+  },
+  "scene_ancient_forest_rumor": {
+    "id": "scene_ancient_forest_rumor",
+    "title": "古老森林中的傳聞",
+    "description": "你為了深入了解妖獸的異常，來到一處古老的妖族森林。在這裡，你偶然聽聞了關於妖族內部紛爭，以及一個被妖族長老隱瞞的古老詛咒的傳聞。",
+    "options": [
+      {
+        "id": "option_seek_demon_elder",
+        "text": "尋找妖族長老，探聽真相。",
+        "nextSceneId": "scene_demon_source_uncover",
+        "outcomeText": "你冒險進入妖族領地，試圖找到妖族長老，得知了妖族苦衷。"
+      },
+      {
+        "id": "option_explore_forest",
+        "text": "深入森林，尋找詛咒的線索。",
+        "nextSceneId": "scene_demon_source_uncover",
+        "outcomeText": "你在森林中發現了被詛咒的痕跡，了解了妖族的困境。"
+      }
+    ]
+  },
+  "scene_demon_source_uncover": {
+    "id": "scene_demon_source_uncover",
+    "title": "揭露異變的真相",
+    "description": "無論是深入妖獸巢穴還是探尋妖族傳聞，你最終都發現了人妖衝突的真正根源：一股來自域外的邪惡力量，它透過某種詛咒或蠱惑，操控著部分妖獸，意圖挑起兩族全面戰爭，從中漁利。",
+    "options": [
+      {
+        "id": "option_uncover_inform_human",
+        "text": "將真相告知人族，請求仙門出兵平定妖患。",
+        "nextSceneId": "scene_human_alliance_mobilize",
+        "outcomeText": "人族得知真相後，決定全面剿滅受操控的妖獸，但這也加劇了人妖之間的對立。"
+      },
+      {
+        "id": "option_uncover_aid_demon",
+        "text": "向妖族揭示真相，幫助他們解除詛咒。",
+        "nextSceneId": "scene_demon_alliance_mobilize",
+        "outcomeText": "妖族得知真相後，對你表示感激，並決定與你合作，共同對抗邪惡力量。"
+      },
+      {
+        "id": "option_uncover_mediate",
+        "text": "嘗試調解兩族，共同對抗域外邪惡。",
+        "nextSceneId": "scene_final_battle_intervene",
+        "outcomeText": "你努力說服人妖兩族，嘗試建立信任，共同應對威脅。"
+      }
+    ]
+  },
+  "scene_human_alliance_mobilize": {
+    "id": "scene_human_alliance_mobilize",
+    "title": "人族仙門的總攻",
+    "description": "人族仙門集結大軍，準備對被邪惡力量操控的妖獸發動總攻。你作為關鍵人物，參與了這場聲勢浩大的戰役。這將是一場血與火的考驗。",
+    "options": [
+      {
+        "id": "option_human_battle_lead",
+        "text": "身先士卒，帶領人族修者衝鋒陷陣。",
+        "nextSceneId": "scene_final_battle_human_victorious",
+        "outcomeText": "你衝鋒在前，為人族取得勝利立下汗馬功勞。"
+      },
+      {
+        "id": "option_human_battle_strategy",
+        "text": "提供戰術建議，從旁協助，減少傷亡。",
+        "nextSceneId": "scene_final_battle_human_victorious",
+        "outcomeText": "你運籌帷幄，協助人族仙門以最小的代價取得了勝利。"
+      }
+    ]
+  },
+  "scene_demon_alliance_mobilize": {
+    "id": "scene_demon_alliance_mobilize",
+    "title": "妖族的反抗與希望",
+    "description": "在你的幫助下，妖族意識到被邪惡力量利用。他們決心反抗，與你一同對抗被操控的同族，並尋求解除詛咒的方法。你成為了妖族的希望。",
+    "options": [
+      {
+        "id": "option_demon_battle_assist",
+        "text": "協助妖族解除詛咒，同時對抗被操控的妖獸。",
+        "nextSceneId": "scene_final_battle_demon_reborn",
+        "outcomeText": "你幫助妖族淨化了邪惡影響，他們的力量得以恢復。"
+      },
+      {
+        "id": "option_demon_battle_guide",
+        "text": "引導妖族運用自身力量，共同對抗邪惡源頭。",
+        "nextSceneId": "scene_final_battle_demon_reborn",
+        "outcomeText": "你引導妖族爆發潛力，共同鎖定了邪惡的源頭。"
+      }
+    ]
+  },
+  "scene_final_battle_human_victorious": {
+    "id": "scene_final_battle_human_victorious",
+    "title": "人族勝利：妖患平息",
+    "description": "在你的幫助下，人族仙門取得了對妖獸的全面勝利。邪惡力量的影響被清除，村落和人類世界恢復了安寧。人族開始對妖族抱持更強硬的態度。",
+    "options": [
+      {
+        "id": "option_end_human_hero",
+        "text": "遊戲結束：你被譽為人族英雄，享受無上榮譽，但妖族則可能陷入更深的困境。",
+        "nextSceneId": null,
+        "outcomeText": "你被世人傳頌，但人妖兩族的隔閡可能因此加深。"
+      },
+      {
+        "id": "option_end_human_observer",
+        "text": "遊戲結束：你見證了勝利，但兩族關係的未來仍充滿不確定性，你選擇繼續觀察。",
+        "nextSceneId": null,
+        "outcomeText": "你功成身退，但心知這場勝利並未徹底解決人妖矛盾。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_demon_reborn": {
+    "id": "scene_final_battle_demon_reborn",
+    "title": "妖族新生：化解詛咒",
+    "description": "你與妖族成功解除或驅逐了控制他們的邪惡力量。妖族從詛咒中解脫，力量回歸，他們對你充滿感激，並渴望與人族和平共處。",
+    "options": [
+      {
+        "id": "option_end_demon_savior",
+        "text": "遊戲結束：你被妖族奉為救世主，人妖兩族關係出現轉機，你將成為和平的橋樑。",
+        "nextSceneId": null,
+        "outcomeText": "你改變了妖族的命運，也為人妖兩族帶來了和平共處的希望。"
+      },
+      {
+        "id": "option_end_demon_friend",
+        "text": "遊戲結束：你與妖族結下深厚友誼，但你選擇退隱幕後，讓兩族自行發展。",
+        "nextSceneId": null,
+        "outcomeText": "你完成了使命，選擇退隱，看著人妖兩族走向未知的未來。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_intervene": {
+    "id": "scene_final_battle_intervene",
+    "title": "人妖聯手：共抗域外邪惡",
+    "description": "在你的努力下，人妖兩族終於放下了部分成見，認識到域外邪惡才是真正的敵人。他們組成了臨時聯軍，共同對抗那股暗中操控一切的邪惡力量。",
+    "options": [
+      {
+        "id": "option_end_intervene_hero",
+        "text": "遊戲結束：你帶領兩族聯軍擊敗了域外邪惡，人妖兩族從此開啟了和平共處的新篇章。",
+        "nextSceneId": null,
+        "outcomeText": "你成為了人妖兩族共同的英雄，開創了一個和平的時代。"
+      },
+      {
+        "id": "option_end_intervene_tragedy",
+        "text": "遊戲結束：雖然擊敗了邪惡，但兩族仍付出慘重代價，和平的道路充滿挑戰。",
+        "nextSceneId": null,
+        "outcomeText": "你雖然贏得了戰鬥，但深知兩族間的芥蒂仍需漫長時間來化解。"
+      }
+    ],
+    "isEndingScene": true
+  }
+}

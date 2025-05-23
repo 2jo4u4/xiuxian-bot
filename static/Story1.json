@@ -22,7 +22,8 @@
         "nextSceneId": "scene_forest_journey_continue",
         "outcomeText": "你仔細探查，但未發現功法傳承，最終選擇離開。雖無所獲，卻也避開未知風險。"
       }
-    ]
+    ],
+    "isStartingScene": true
   },
   "scene_cave_heritage": {
     "id": "scene_cave_heritage",
@@ -32,6 +33,7 @@
       {
         "id": "option_heritage_practice",
         "text": "立即開始參悟功法，提升實力。",
+        "nextSceneId": "scene_blackmarket_encounter",
         "outcomeText": "你初步掌握了《九轉玄天訣》的奧義，實力大幅提升。你對未來的修行之路充滿信心。"
       }
     ]
@@ -126,6 +128,7 @@
       {
         "id": "option_auction_end_continue",
         "text": "離開拍賣會，繼續修行。",
+        "nextSceneId": "scene_forest_spirit_beast",
         "outcomeText": "你繼續踏上旅程，尋找新的機緣。"
       }
     ]
@@ -250,10 +253,10 @@
     "description": "小鎮居民對你感恩戴德，你的俠義之舉聲名遠播，甚至引來了一些隱世宗門的關注。",
     "options": [
       {
-        "id": "option_end_hero_fame",
-        "text": "故事結束：你的傳奇之路正在開啟！",
-        "outcomeText": "",
-        "isEnd": true
+        "id": "option_fame_to_sect_comp",
+        "text": "受到宗門邀請，準備參加宗門大比。",
+        "nextSceneId": "scene_sect_competition",
+        "outcomeText": "你的聲望讓你獲得了參加宗門大比的資格。"
       }
     ]
   },
@@ -263,10 +266,10 @@
     "description": "你驅逐了邪修，小鎮得以恢復平靜。你的行為贏得了居民的感謝，但並未像徹底剷除那樣帶來巨大的聲譽。",
     "options": [
       {
-        "id": "option_end_hero_minor",
-        "text": "故事結束：你的修仙旅程持續。",
-        "outcomeText": "",
-        "isEnd": true
+        "id": "option_minor_to_sect_comp",
+        "text": "聽聞宗門大比召開，決定前往挑戰。",
+        "nextSceneId": "scene_sect_competition",
+        "outcomeText": "你決定自行前往，希望能在大比中證明自己。"
       }
     ]
   },
@@ -277,10 +280,192 @@
     "options": [
       {
         "id": "option_end_neutral",
-        "text": "故事結束：你的故事將如何發展？",
-        "outcomeText": "",
-        "isEnd": true
+        "text": "遊戲結束：你的故事將如何發展？",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_sect_competition": {
+    "id": "scene_sect_competition",
+    "title": "宗門大比的嶄露頭角",
+    "description": "各宗門弟子齊聚一堂，爭奪大比魁首之位。你在比試中憑藉《九轉玄天訣》的精妙，一路過關斬將，展現出驚人的實力。",
+    "options": [
+      {
+        "id": "option_comp_win",
+        "text": "全力以赴，力爭大比冠軍。",
+        "nextSceneId": "scene_comp_champion",
+        "outcomeText": "你技壓群雄，奪得宗門大比冠軍！宗門高層對你刮目相看。"
+      },
+      {
+        "id": "option_comp_top_rank",
+        "text": "穩紮穩打，進入前三名即可。",
+        "nextSceneId": "scene_comp_top_three",
+        "outcomeText": "你名列前茅，實力得到宗門肯定，獲得豐厚獎勵。"
+      },
+      {
+        "id": "option_comp_learn",
+        "text": "以交流學習為主，不求名次。",
+        "nextSceneId": "scene_comp_participation",
+        "outcomeText": "你在比試中有所感悟，雖無名次，但修行境界有所提升。"
       }
     ]
+  },
+  "scene_comp_champion": {
+    "id": "scene_comp_champion",
+    "title": "魁首之榮與秘境機緣",
+    "description": "奪得大比冠軍後，你受到宗門最高禮遇，並被授予進入宗門**秘傳修行地**的資格，那裡傳聞隱藏著上古仙人遺留的寶物。",
+    "options": [
+      {
+        "id": "option_champion_enter_secret_realm",
+        "text": "進入宗門秘傳修行地。",
+        "nextSceneId": "scene_encounter_celestial_maiden",
+        "outcomeText": "你踏入秘傳修行地，準備迎接更大的機緣。"
+      }
+    ]
+  },
+  "scene_comp_top_three": {
+    "id": "scene_comp_top_three",
+    "title": "宗門嘉獎與新任務",
+    "description": "你名列前茅，獲得宗門賞賜的珍稀丹藥與法寶。同時，你被委派了一個外出歷練的任務，需前往凡塵俗世查探異象。",
+    "options": [
+      {
+        "id": "option_top_three_undertake_mission",
+        "text": "接受任務，前往凡塵俗世歷練。",
+        "nextSceneId": "scene_encounter_celestial_maiden",
+        "outcomeText": "你啟程前往凡塵，肩負宗門重任，期待新的經歷。"
+      }
+    ]
+  },
+  "scene_comp_participation": {
+    "id": "scene_comp_participation",
+    "title": "默默修行，厚積薄發",
+    "description": "雖然未在大比中脫穎而出，但你在比試中對道法有了更深的理解，決定潛心修行，厚積薄發。",
+    "options": [
+      {
+        "id": "option_participation_continue_cultivation",
+        "text": "閉關靜修，提升實力。",
+        "nextSceneId": "scene_encounter_celestial_maiden",
+        "outcomeText": "你閉關數年，修為精進，渴望將所學付諸實踐。"
+      }
+    ]
+  },
+  "scene_encounter_celestial_maiden": {
+    "id": "scene_encounter_celestial_maiden",
+    "title": "邂逅與危機",
+    "description": "無論你在何處，命運的齒輪開始轉動。你在某次機緣巧合下，邂逅了一位氣質出塵的女子，她容顏絕麗，卻身懷隱秘。隨著你們的接觸，一股新的危機也悄然逼近。",
+    "options": [
+      {
+        "id": "option_encounter_deepen_ties",
+        "text": "嘗試了解她的過去，與她深入交流。",
+        "nextSceneId": "scene_cultivation_crisis",
+        "outcomeText": "你們關係日益密切，但你漸漸察覺到她背後的複雜與危險。"
+      },
+      {
+        "id": "option_encounter_maintain_distance",
+        "text": "保持距離，避免捲入不必要的麻煩。",
+        "nextSceneId": "scene_cultivation_crisis_minor",
+        "outcomeText": "你選擇保持距離，避免了個人情感糾葛，但間接影響了即將到來的大危機。"
+      }
+    ]
+  },
+  "scene_cultivation_crisis": {
+    "id": "scene_cultivation_crisis",
+    "title": "魔宗入侵的邊緣",
+    "description": "與她的深入接觸，讓你發現她竟與魔宗的陰謀有關，而魔宗的入侵已箭在弦上。你必須做出選擇：是保護她，還是堅守正道？正邪之間的界線變得模糊。",
+    "options": [
+      {
+        "id": "option_crisis_protect_her",
+        "text": "選擇保護她，哪怕與整個修仙界為敵。",
+        "nextSceneId": "scene_final_battle_high_risk",
+        "outcomeText": "你為愛義無反顧，這將導致你面對更大的阻力，也可能因此觸怒修仙界。"
+      },
+      {
+        "id": "option_crisis_inform_sect",
+        "text": "將情報告知宗門，共同抵抗魔宗。",
+        "nextSceneId": "scene_final_battle_coordinated",
+        "outcomeText": "你選擇顧全大局，與宗門聯手，這將是一場曠日持久的戰爭。"
+      },
+      {
+        "id": "option_crisis_sacrifice_love",
+        "text": "忍痛割捨情感，以大局為重。",
+        "nextSceneId": "scene_final_battle_solitary",
+        "outcomeText": "你放棄了個人情感，道心更加堅定，獨自面對魔宗的威脅。"
+      }
+    ]
+  },
+  "scene_cultivation_crisis_minor": {
+    "id": "scene_cultivation_crisis_minor",
+    "title": "暗流湧動",
+    "description": "你雖然避免了與女子的深度牽扯，但魔宗入侵的傳聞仍不脛而走，修仙界氣氛日益緊張。你意識到一場大戰不可避免。",
+    "options": [
+      {
+        "id": "option_minor_crisis_prepare_war",
+        "text": "積極備戰，等待宗門號召。",
+        "nextSceneId": "scene_final_battle_coordinated",
+        "outcomeText": "你準備好應對大戰，等待宗門集結。"
+      }
+    ]
+  },
+  "scene_final_battle_high_risk": {
+    "id": "scene_final_battle_high_risk",
+    "title": "天魔降臨：孤注一擲的決戰",
+    "description": "魔宗巨擘——天魔降臨，實力恐怖。你為保護所愛之人，不惜孤身迎戰，與天魔展開一場驚天動地的殊死搏鬥。你的每一步都關乎生死。",
+    "options": [
+      {
+        "id": "option_battle_high_risk_fight",
+        "text": "爆發全部潛力，與天魔決一死戰。",
+        "nextSceneId": null,
+        "outcomeText": "你拼盡全力，雖然過程艱險，但在仙器的幫助下，最終擊敗了天魔。然而，你也身受重傷，需要漫長的歲月才能恢復。修仙界因此得以保全，而你的傳奇也將流芳百世，但情感之路卻充滿坎坷。"
+      },
+      {
+        "id": "option_battle_high_risk_retreat",
+        "text": "察覺不敵，嘗試尋找一線生機，帶著她撤退。",
+        "nextSceneId": null,
+        "outcomeText": "你意識到實力差距巨大，選擇暫避鋒芒。雖然保住了性命，但魔宗勢力席捲修仙界，你將踏上漫長而充滿危險的流亡之路。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_coordinated": {
+    "id": "scene_final_battle_coordinated",
+    "title": "天魔降臨：宗門聯手抗魔",
+    "description": "天魔降臨，修仙界各大宗門組成聯軍，共同對抗魔道。你作為聯軍的一員，在戰場上發揮關鍵作用，與眾多正道高手聯手圍剿天魔。",
+    "options": [
+      {
+        "id": "option_battle_coordinated_lead_charge",
+        "text": "身先士卒，帶領弟子衝鋒。",
+        "nextSceneId": null,
+        "outcomeText": "你英勇無畏，激勵了聯軍士氣，最終成功擊敗天魔。你成為了修仙界的英雄，受萬人敬仰，但也付出了巨大的代價。"
+      },
+      {
+        "id": "option_battle_coordinated_support",
+        "text": "從旁協助，協調戰局，尋找破綻。",
+        "nextSceneId": null,
+        "outcomeText": "你運用智慧，精準支援，最終與眾人合力消滅天魔。修仙界恢復和平，你作為幕後英雄，聲名遠播，但更享受隱於幕後的平靜。"
+      }
+    ],
+    "isEndingScene": true
+  },
+  "scene_final_battle_solitary": {
+    "id": "scene_final_battle_solitary",
+    "title": "天魔降臨：獨自面對的終局",
+    "description": "你捨棄了情感，將全部精力投入修煉，實力達到巔峰。當天魔降臨時，你沒有選擇與宗門聯手，而是獨自一人，背負著所有責任，對抗這毀滅性的力量。",
+    "options": [
+      {
+        "id": "option_battle_solitary_engage",
+        "text": "施展禁忌之力，與天魔同歸於盡或將其封印。",
+        "nextSceneId": null,
+        "outcomeText": "你以生命為代價，成功封印或消滅了天魔，挽救了修仙界。你的名字將成為傳說，但你將從此消失於世間。"
+      },
+      {
+        "id": "option_battle_solitary_transcend",
+        "text": "在戰鬥中領悟更深層次的大道，尋求突破。",
+        "nextSceneId": null,
+        "outcomeText": "在生死邊緣，你突破了桎梏，達到一個全新的境界。你擊敗了天魔，但從此超脫於世俗，飛升上界，留下凡塵傳說。"
+      }
+    ],
+    "isEndingScene": true
   }
 }

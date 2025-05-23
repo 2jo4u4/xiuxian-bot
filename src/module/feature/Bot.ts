@@ -18,9 +18,10 @@ import { Template } from "./TextTemplate.ts";
 import { getRandomMonsterByPlayerLevel, Monster } from "./Monster.ts";
 import { calculateReward } from "./Reward.ts";
 import { battle } from "./Battle.ts";
+import { StoryEngine, GameStory } from "./Story.ts";
+import { ItemList, ItemDefinition } from "./ItemDefinitions.ts";
+import { readStaticJSONFile } from "../../storage/mod.ts";
 
-// 玩家臨時遭遇怪物暫存（型別明確）
-const playerEncounter: Map<string, Monster> = new Map();
 const log = getLogger("Bot");
 const symbolCustomId = ", ";
 function createBtnCustomId(...ss: string[]) {
@@ -89,6 +90,29 @@ async function safeDeleteMessage(
   }
 }
 
+const defStory: GameStory = {
+  nostory: {
+    id: "nostory",
+    title: "故事載入失敗",
+    description: "",
+    options: [],
+    isStartingScene: true,
+    isEndingScene: true,
+  },
+};
+
+function getRandomStoryFn() {
+  const all_story = [
+    readStaticJSONFile<GameStory>("Story1.json", defStory),
+    readStaticJSONFile<GameStory>("Story2.json", defStory),
+    readStaticJSONFile<GameStory>("Story3.json", defStory),
+  ];
+  return () => {
+    const idx = Math.floor(Math.random() * all_story.length);
+    return all_story[idx];
+  };
+}
+
 export async function botLoop() {
   const DiceKey = "!!Dice";
   const commandCtrl = new CommandCtrl();
@@ -99,6 +123,13 @@ export async function botLoop() {
   const token = Deno.env.get("DISCORDTOKEN");
   const hasAdmin = Deno.env.get("MANAGER") !== undefined;
   const admin = BigInt(Deno.env.get("MANAGER")!);
+
+  // 玩家臨時遭遇怪物暫存（型別明確）
+  const playerEncounter: Map<string, Monster> = new Map();
+  // 故事模式：每位用戶獨立進度
+  const userStories: Map<string, StoryEngine> = new Map();
+  const randomStoryFn = getRandomStoryFn();
+
   if (token !== undefined) {
     /**
      * 不因有不同伺服器(公會)而有不同角色。
@@ -429,6 +460,128 @@ export async function botLoop() {
                 role.hp = state.maxHp;
                 role.mp = state.maxMp;
                 msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+              }
+              safeSendMessage(bot, channelId, { content: msg });
+            },
+            [UserCommand.story]: () => {
+              const key = `${guildId}_${userId}`;
+              let engine = userStories.get(key);
+              if (!engine) {
+                engine = new StoryEngine(randomStoryFn());
+                userStories.set(key, engine);
+              }
+              const scene = engine.getCurrentScene();
+              let msg = `【${scene.title}】\n${scene.description}\n`;
+              if (engine.isEnd()) {
+                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+              } else {
+                msg +=
+                  "\n可選擇：" +
+                  scene.options.map((o, i) => `(${i + 1})${o.text}`).join("  ");
+                msg += "\n請用 storypick <編號> 選擇。";
+              }
+              safeSendMessage(bot, channelId, { content: msg });
+            },
+            [UserCommand.storyPick]: () => {
+              const key = `${guildId}_${userId}`;
+              const engine = userStories.get(key);
+              if (!engine) {
+                safeSendMessage(bot, channelId, {
+                  content: "請先輸入 story 開始故事模式。",
+                });
+                return;
+              }
+              const scene = engine.getCurrentScene();
+              if (engine.isEnd()) {
+                safeSendMessage(bot, channelId, {
+                  content: "故事已結束，請重新輸入 story 以開始新故事。",
+                });
+                return;
+              }
+              const idx = parseInt(p[0]);
+              if (isNaN(idx) || idx < 1 || idx > scene.options.length) {
+                safeSendMessage(bot, channelId, {
+                  content: `請輸入有效的選項編號（1-${scene.options.length}）。`,
+                });
+                return;
+              }
+              const option = scene.options[idx - 1];
+              const outcome = engine.chooseOption(option.id);
+              let msg = `你選擇了「${option.text}」\n${outcome || ""}`;
+              const nextScene = engine.getCurrentScene();
+              msg += `\n\n【${nextScene.title}】\n${nextScene.description}`;
+              let rewardMsg = "";
+              if (engine.isEnd()) {
+                // === 獎勵邏輯 ===
+                const role = game.getRole(guildId, userId);
+                if (role) {
+                  // 經驗值獎勵
+                  const exp = 100 + Math.floor(Math.random() * 101); // 100~200
+                  role.gainExp(exp);
+                  rewardMsg += `\n\n🎉 恭喜完成故事，獲得經驗值 ${exp}`;
+                  // 隨機道具/裝備
+                  const weighted: ItemDefinition[] = [];
+                  for (const item of ItemList) {
+                    let weight = 1;
+                    switch (item.rarity) {
+                      case "legendary":
+                        weight = 1;
+                        break;
+                      case "epic":
+                        weight = 3;
+                        break;
+                      case "rare":
+                        weight = 8;
+                        break;
+                      case "uncommon":
+                        weight = 20;
+                        break;
+                      case "common":
+                        weight = 40;
+                        break;
+                      default:
+                        weight = 1;
+                        break;
+                    }
+                    for (let i = 0; i < weight; i++) weighted.push(item);
+                  }
+                  if (weighted.length > 0) {
+                    const item =
+                      weighted[Math.floor(Math.random() * weighted.length)];
+                    role.gainItem(item.id);
+                    rewardMsg += `，並獲得道具/裝備：${item.name}（${item.rarity}）`;
+                  }
+                }
+                msg += `\n${rewardMsg}`;
+                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+              } else {
+                msg +=
+                  "\n可選擇：" +
+                  nextScene.options
+                    .map((o, i) => `(${i + 1})${o.text}`)
+                    .join("  ");
+                msg += "\n請用 storypick <編號> 選擇。";
+              }
+              safeSendMessage(bot, channelId, { content: msg });
+            },
+            [UserCommand.storyState]: () => {
+              const key = `${guildId}_${userId}`;
+              const engine = userStories.get(key);
+              if (!engine) {
+                safeSendMessage(bot, channelId, {
+                  content: "請先輸入 story 開始故事模式。",
+                });
+                return;
+              }
+              const scene = engine.getCurrentScene();
+              let msg = `【${scene.title}】\n${scene.description}\n`;
+              if (engine.isEnd()) {
+                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+              } else {
+                msg +=
+                  "\n可選擇：" +
+                  scene.options.map((o, i) => `(${i + 1})${o.text}`).join("  ");
+                msg += "\n請用 storypick <編號> 選擇。";
               }
               safeSendMessage(bot, channelId, { content: msg });
             },

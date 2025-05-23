@@ -41,6 +41,9 @@ export enum UserCommand {
   戰鬥, // 新增
   逃跑, // 新增
   搜尋並戰鬥, // 新增：整合搜尋敵人與戰鬥
+  story, // 故事模式主指令
+  storyPick, // 選擇故事選項
+  storyState, // 查詢故事進度
   保存所有使用者 = 998,
   關閉伺服器 = 999,
 }
@@ -82,6 +85,12 @@ export const CommandAlais: Record<string, UserCommand> = {
   搜尋並戰鬥: UserCommand.搜尋並戰鬥,
   searchfight: UserCommand.搜尋並戰鬥,
   searchAndFight: UserCommand.搜尋並戰鬥,
+  story: UserCommand.story,
+  故事模式: UserCommand.story,
+  storypick: UserCommand.storyPick,
+  故事選擇: UserCommand.storyPick,
+  storystate: UserCommand.storyState,
+  故事進度: UserCommand.storyState,
 };
 
 // 境界對應經驗值表
