@@ -121,8 +121,8 @@ export async function botLoop() {
   game.injectUsers();
   questManager.injectQuest();
   const token = Deno.env.get("DISCORDTOKEN");
-  const hasAdmin = Deno.env.get("MANAGER") !== undefined;
-  const admin = BigInt(Deno.env.get("MANAGER")!);
+  const admin_id = Deno.env.get("MANAGER");
+  const admin = admin_id ? BigInt(admin_id) : null;
 
   // 玩家臨時遭遇怪物暫存（型別明確）
   const playerEncounter: Map<string, Monster> = new Map();
@@ -159,362 +159,314 @@ export async function botLoop() {
           const isCommand = commandCtrl.getCommandType(message.content);
           if (isCommand === null) return;
           const { command, p } = isCommand;
-          const { authorId, channelId, tag } = message;
-          const userId = BigInt(authorId);
-          const role = game.getRole(guildId, authorId);
-
-          // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
-          const commandHandlers: Record<UserCommand, () => void> = {
-            [UserCommand.幫助]: () => {
-              safeSendMessage(bot, channelId, { content: Template.help() });
-            },
-            [UserCommand.建立角色]: () => {
-              if (role === undefined) {
-                const role = game.createRole(guildId, authorId);
-                game.addRole(role);
-              }
-              safeSendMessage(bot, channelId, {
-                content: Template.createRole(tag),
-              });
-            },
-            [UserCommand.狀態]: () => {
-              const content =
-                role === undefined
-                  ? Template.noHasRole()
-                  : Template.status(tag, role);
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.接受任務]: () => {
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (role.executeQuest !== null) {
-                content = Template.alreadyHasQuest();
-              } else if (role.duringTraining) {
-                content = Template.duringTraining(role);
-              } else {
-                const quest = questManager.assignQuest(role);
-                const components: ButtonComponent[] = [];
-                const disabled = quest.type === "dice";
-                if (disabled) {
-                  const customId = createBtnCustomId(
-                    role.userId.toString(),
-                    DiceKey
-                  );
-                  components.push({
-                    type: MessageComponentTypes.Button,
-                    label: "投骰子",
-                    style: ButtonStyles.Primary,
-                    customId,
+          const { authorId: userId, channelId, tag } = message;
+          const role = game.getRole(guildId, userId);
+          if (isCommand.command === UserCommand.幫助) {
+            safeSendMessage(bot, channelId, { content: Template.help() });
+          } else if (isCommand.command === UserCommand.建立角色) {
+            const role = game.createRole(guildId, userId);
+            game.addRole(role);
+            safeSendMessage(bot, channelId, {
+              content: Template.createRole(tag),
+            });
+          } else if (role !== undefined) {
+            // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
+            const commandHandlers: Record<UserCommand, () => void> = {
+              [UserCommand.幫助]: () => {
+                // 不會觸發
+              },
+              [UserCommand.建立角色]: () => {
+                // 不會觸發
+              },
+              [UserCommand.狀態]: () => {
+                safeSendMessage(bot, channelId, {
+                  content: Template.status(tag, role),
+                });
+              },
+              [UserCommand.接受任務]: () => {
+                let content = "";
+                if (role.executeQuest !== null) {
+                  content = Template.alreadyHasQuest();
+                } else if (role.duringTraining) {
+                  content = Template.duringTraining(role);
+                } else {
+                  const quest = questManager.assignQuest(role);
+                  const components: ButtonComponent[] = [];
+                  const disabled = quest.type === "dice";
+                  if (disabled) {
+                    const customId = createBtnCustomId(
+                      role.userId.toString(),
+                      DiceKey
+                    );
+                    components.push({
+                      type: MessageComponentTypes.Button,
+                      label: "投骰子",
+                      style: ButtonStyles.Primary,
+                      customId,
+                    });
+                  }
+                  quest.options.forEach(({ desc, ansId }) => {
+                    const customId = createBtnCustomId(
+                      role.userId.toString(),
+                      ansId
+                    );
+                    components.push({
+                      type: MessageComponentTypes.Button,
+                      label: desc,
+                      style: ButtonStyles.Primary,
+                      customId,
+                      disabled,
+                    });
+                  });
+                  content = Template.questDesc(quest.title, quest.desc, tag);
+                  safeSendMessage(bot, channelId, {
+                    content,
+                    components: [
+                      {
+                        type: MessageComponentTypes.ActionRow,
+                        components: components as [ButtonComponent],
+                      },
+                    ],
+                  });
+                  return;
+                }
+                safeSendMessage(bot, channelId, { content });
+              },
+              [UserCommand.丟骰子]: () => {
+                safeSendMessage(bot, channelId, {
+                  content: Template.unavailableCommand(),
+                });
+              },
+              [UserCommand.回覆任務]: () => {
+                safeSendMessage(bot, channelId, {
+                  content: Template.unavailableCommand(),
+                });
+              },
+              [UserCommand.取消任務]: () => {
+                if (role.executeQuest !== null) {
+                  const content = Template.giveupQuest(role.executeQuest.title);
+                  safeSendMessage(bot, channelId, { content });
+                  role.executeQuest = null;
+                } else {
+                  safeSendMessage(bot, channelId, {
+                    content: Template.noHasQuest(),
                   });
                 }
-                quest.options.forEach(({ desc, ansId }) => {
-                  const customId = createBtnCustomId(
-                    role.userId.toString(),
-                    ansId
-                  );
-                  components.push({
-                    type: MessageComponentTypes.Button,
-                    label: desc,
-                    style: ButtonStyles.Primary,
-                    customId,
-                    disabled,
-                  });
-                });
-                content = Template.questDesc(quest.title, quest.desc, tag);
-                safeSendMessage(bot, channelId, {
-                  content,
-                  components: [
-                    {
-                      type: MessageComponentTypes.ActionRow,
-                      components: components as [ButtonComponent],
-                    },
-                  ],
-                });
-                return;
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.丟骰子]: () => {
-              safeSendMessage(bot, channelId, {
-                content: Template.unavailableCommand(),
-              });
-            },
-            [UserCommand.回覆任務]: () => {
-              safeSendMessage(bot, channelId, {
-                content: Template.unavailableCommand(),
-              });
-            },
-            [UserCommand.取消任務]: () => {
-              if (role && role.executeQuest !== null) {
-                const content = Template.giveupQuest(role.executeQuest.title);
+              },
+              [UserCommand.閉關]: () => {
+                let content = "";
+                if (role.duringTraining) {
+                  content = Template.duringTraining(role);
+                } else {
+                  role.starTraining();
+                  content = Template.starTraining(tag);
+                }
                 safeSendMessage(bot, channelId, { content });
-                role.executeQuest = null;
-              } else {
-                const content =
-                  role === undefined
-                    ? Template.noHasRole()
-                    : Template.noHasQuest();
+              },
+              [UserCommand.閉關結束]: () => {
+                let content = "";
+                if (!role.duringTraining) {
+                  content = Template.starTrainingFirst();
+                } else {
+                  const hours = role.overTraining();
+                  content = Template.overTraining(tag, hours);
+                }
                 safeSendMessage(bot, channelId, { content });
-              }
-            },
-            [UserCommand.閉關]: () => {
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (role.duringTraining) {
-                content = Template.duringTraining(role);
-              } else {
-                role.starTraining();
-                content = Template.starTraining(tag);
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.閉關結束]: () => {
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (!role.duringTraining) {
-                content = Template.starTrainingFirst();
-              } else {
-                const hours = role.overTraining();
-                content = Template.overTraining(tag, hours);
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.使用道具]: () => {
-              const item_id: string | undefined = p[0];
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (!item_id) {
-                content = "請輸入要使用的道具ID。";
-              } else {
-                const result = role.useItem(item_id);
-                content = result.message;
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.裝備]: () => {
-              const item_id: string | undefined = p[0];
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (!item_id) {
-                content = "請輸入要裝備的道具ID。";
-              } else {
-                const result = role.equipItem(item_id);
-                content = result.message;
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.卸下裝備]: () => {
-              const slot: string | undefined = p[0];
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else if (!slot) {
-                content =
-                  "請輸入要卸下的部位名稱（如 weapon/armor/ring/necklace）。";
-              } else {
-                const result = role.unequip(slot);
-                content = result.message;
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.查看背包]: () => {
-              let content = "";
-              if (role === undefined) {
-                content = Template.noHasRole();
-              } else {
+              },
+              [UserCommand.使用道具]: () => {
+                const item_id: string | undefined = p[0];
+                let content = "";
+                if (!item_id) {
+                  content = "請輸入要使用的道具ID。";
+                } else {
+                  const result = role.useItem(item_id);
+                  content = result.message;
+                }
+                safeSendMessage(bot, channelId, { content });
+              },
+              [UserCommand.裝備]: () => {
+                const item_id: string | undefined = p[0];
+                let content = "";
+                if (!item_id) {
+                  content = "請輸入要裝備的道具ID。";
+                } else {
+                  const result = role.equipItem(item_id);
+                  content = result.message;
+                }
+                safeSendMessage(bot, channelId, { content });
+              },
+              [UserCommand.卸下裝備]: () => {
+                const slot: string | undefined = p[0];
+                let content = "";
+                if (!slot) {
+                  content =
+                    "請輸入要卸下的部位名稱（如 weapon/armor/ring/necklace）。";
+                } else {
+                  const result = role.unequip(slot);
+                  content = result.message;
+                }
+                safeSendMessage(bot, channelId, { content });
+              },
+              [UserCommand.查看背包]: () => {
                 const backpackItems = role.getBackpackItems();
                 const equipmentDetails = role.getEquipmentDetails();
-                content = Template.showBackpackAndEquipment(
+                const content = Template.showBackpackAndEquipment(
                   backpackItems,
                   equipmentDetails
                 );
-              }
-              safeSendMessage(bot, channelId, { content });
-            },
-            [UserCommand.保存所有使用者]: () => {
-              if (hasAdmin && admin === userId) {
-                game.storeUser();
-              }
-            },
-            [UserCommand.關閉伺服器]: () => {
-              if (hasAdmin && admin === userId) {
-                game.storeUser();
-                return Deno.exit(0);
-              }
-            },
-            [UserCommand.搜尋敵人]: () => {
-              const role = game.getRole(guildId, userId);
-              if (!role) {
-                safeSendMessage(bot, channelId, {
-                  content: Template.noHasRole(),
-                });
-                return;
-              }
-              const monster = getRandomMonsterByPlayerLevel(role.level.text);
-              playerEncounter.set(`${role.guildId}_${role.userId}`, monster);
-              safeSendMessage(bot, channelId, {
-                content: `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`,
-              });
-            },
-            [UserCommand.戰鬥]: () => {
-              const role = game.getRole(guildId, userId);
-              if (!role) {
-                safeSendMessage(bot, channelId, {
-                  content: Template.noHasRole(),
-                });
-                return;
-              }
-              const key = `${role.guildId}_${role.userId}`;
-              const monster = playerEncounter.get(key);
-              if (!monster) {
-                safeSendMessage(bot, channelId, {
-                  content: "你目前沒有遇到任何敵人，請先『搜尋敵人』。",
-                });
-                return;
-              }
-              // 執行戰鬥
-              const result = battle(role, monster);
-              let msg = `你與「${monster.name}」展開戰鬥！\n`;
-              msg += result.log ? result.log.join("\n") + "\n" : "";
-              if (result.isWin) {
-                // 勝利給獎勵，並寫回剩餘血量/法力
-                role.hp = result.playerHp;
-                role.mp = result.playerMp;
-                const reward = calculateReward(role, monster);
-                role.gainExp(reward.exp);
-                reward.items.forEach((item) => role.gainItem(item.id));
-                msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
-                if (reward.items.length > 0) {
-                  msg += `，並獲得：${reward.items
-                    .map((i) => i.name)
-                    .join("、")}。`;
+                safeSendMessage(bot, channelId, { content });
+              },
+              [UserCommand.保存所有使用者]: () => {
+                if (admin === userId) {
+                  game.storeUser();
                 }
-              } else {
-                // 失敗：扣 1% 經驗，血量/法力補滿
-                const lostExp = Math.floor(role.exp * 0.01);
-                role.gainExp(-lostExp);
-                const state = role.getRoleState();
-                role.hp = state.maxHp;
-                role.mp = state.maxMp;
-                msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
-              }
-              playerEncounter.delete(key);
-              safeSendMessage(bot, channelId, { content: msg });
-            },
-            [UserCommand.逃跑]: () => {
-              const role = game.getRole(guildId, userId);
-              if (!role) {
+              },
+              [UserCommand.關閉伺服器]: () => {
+                if (admin === userId) {
+                  game.storeUser();
+                  return Deno.exit(0);
+                }
+              },
+              [UserCommand.搜尋敵人]: () => {
+                const monster = getRandomMonsterByPlayerLevel(role.level.text);
+                playerEncounter.set(`${role.guildId}_${role.userId}`, monster);
                 safeSendMessage(bot, channelId, {
-                  content: Template.noHasRole(),
+                  content: `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`,
                 });
-                return;
-              }
-              const key = `${role.guildId}_${role.userId}`;
-              if (playerEncounter.has(key)) {
+              },
+              [UserCommand.戰鬥]: () => {
+                const key = `${role.guildId}_${role.userId}`;
+                const monster = playerEncounter.get(key);
+                if (!monster) {
+                  safeSendMessage(bot, channelId, {
+                    content: "你目前沒有遇到任何敵人，請先『搜尋敵人』。",
+                  });
+                  return;
+                }
+                // 執行戰鬥
+                const result = battle(role, monster);
+                let msg = `你與「${monster.name}」展開戰鬥！\n`;
+                msg += result.log ? result.log.join("\n") + "\n" : "";
+                if (result.isWin) {
+                  // 勝利給獎勵，並寫回剩餘血量/法力
+                  role.hp = result.playerHp;
+                  role.mp = result.playerMp;
+                  const reward = calculateReward(role, monster);
+                  role.gainExp(reward.exp);
+                  reward.items.forEach((item) => role.gainItem(item.id));
+                  msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
+                  if (reward.items.length > 0) {
+                    msg += `，並獲得：${reward.items
+                      .map((i) => i.name)
+                      .join("、")}。`;
+                  }
+                } else {
+                  // 失敗：扣 1% 經驗，血量/法力補滿
+                  const lostExp = Math.floor(role.exp * 0.01);
+                  role.gainExp(-lostExp);
+                  const state = role.getRoleState();
+                  role.hp = state.maxHp;
+                  role.mp = state.maxMp;
+                  msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+                }
                 playerEncounter.delete(key);
-                safeSendMessage(bot, channelId, {
-                  content: "你選擇了逃跑，暫時脫離了危險。",
-                });
-              } else {
-                safeSendMessage(bot, channelId, {
-                  content: "你目前沒有遇到任何敵人。",
-                });
-              }
-            },
-            [UserCommand.搜尋並戰鬥]: () => {
-              const role = game.getRole(guildId, userId);
-              if (!role) {
-                safeSendMessage(bot, channelId, {
-                  content: Template.noHasRole(),
-                });
-                return;
-              }
-              // 搜尋敵人
-              const monster = getRandomMonsterByPlayerLevel(role.level.text);
-              // 立即戰鬥
-              const result = battle(role, monster);
-              let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
-              msg += `你與「${monster.name}」展開戰鬥！\n`;
-              msg += result.log ? result.log.join("\n") + "\n" : "";
-              if (result.isWin) {
-                role.hp = result.playerHp;
-                role.mp = result.playerMp;
-                const reward = calculateReward(role, monster);
-                role.gainExp(reward.exp);
-                reward.items.forEach((item) => role.gainItem(item.id));
-                msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
-                if (reward.items.length > 0) {
-                  msg += `，並獲得：${reward.items
-                    .map((i) => i.name)
-                    .join("、")}。`;
+                safeSendMessage(bot, channelId, { content: msg });
+              },
+              [UserCommand.逃跑]: () => {
+                const key = `${role.guildId}_${role.userId}`;
+                if (playerEncounter.has(key)) {
+                  playerEncounter.delete(key);
+                  safeSendMessage(bot, channelId, {
+                    content: "你選擇了逃跑，暫時脫離了危險。",
+                  });
+                } else {
+                  safeSendMessage(bot, channelId, {
+                    content: "你目前沒有遇到任何敵人。",
+                  });
                 }
-              } else {
-                const lostExp = Math.floor(role.exp * 0.01);
-                role.gainExp(-lostExp);
-                const state = role.getRoleState();
-                role.hp = state.maxHp;
-                role.mp = state.maxMp;
-                msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
-              }
-              safeSendMessage(bot, channelId, { content: msg });
-            },
-            [UserCommand.story]: () => {
-              const key = `${guildId}_${userId}`;
-              let engine = userStories.get(key);
-              if (!engine) {
-                engine = new StoryEngine(randomStoryFn());
-                userStories.set(key, engine);
-              }
-              const scene = engine.getCurrentScene();
-              let msg = `【${scene.title}】\n${scene.description}\n`;
-              if (engine.isEnd()) {
-                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
-              } else {
-                msg +=
-                  "\n可選擇：" +
-                  scene.options.map((o, i) => `(${i + 1})${o.text}`).join("  ");
-                msg += "\n請用 storypick <編號> 選擇。";
-              }
-              safeSendMessage(bot, channelId, { content: msg });
-            },
-            [UserCommand.storyPick]: () => {
-              const key = `${guildId}_${userId}`;
-              const engine = userStories.get(key);
-              if (!engine) {
-                safeSendMessage(bot, channelId, {
-                  content: "請先輸入 story 開始故事模式。",
-                });
-                return;
-              }
-              const scene = engine.getCurrentScene();
-              if (engine.isEnd()) {
-                safeSendMessage(bot, channelId, {
-                  content: "故事已結束，請重新輸入 story 以開始新故事。",
-                });
-                return;
-              }
-              const idx = parseInt(p[0]);
-              if (isNaN(idx) || idx < 1 || idx > scene.options.length) {
-                safeSendMessage(bot, channelId, {
-                  content: `請輸入有效的選項編號（1-${scene.options.length}）。`,
-                });
-                return;
-              }
-              const option = scene.options[idx - 1];
-              const outcome = engine.chooseOption(option.id);
-              let msg = `你選擇了「${option.text}」\n${outcome || ""}`;
-              const nextScene = engine.getCurrentScene();
-              msg += `\n\n【${nextScene.title}】\n${nextScene.description}`;
-              let rewardMsg = "";
-              if (engine.isEnd()) {
-                // === 獎勵邏輯 ===
-                const role = game.getRole(guildId, userId);
-                if (role) {
+              },
+              [UserCommand.搜尋並戰鬥]: () => {
+                // 搜尋敵人
+                const monster = getRandomMonsterByPlayerLevel(role.level.text);
+                // 立即戰鬥
+                const result = battle(role, monster);
+                let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
+                msg += `你與「${monster.name}」展開戰鬥！\n`;
+                msg += result.log ? result.log.join("\n") + "\n" : "";
+                if (result.isWin) {
+                  role.hp = result.playerHp;
+                  role.mp = result.playerMp;
+                  const reward = calculateReward(role, monster);
+                  role.gainExp(reward.exp);
+                  reward.items.forEach((item) => role.gainItem(item.id));
+                  msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
+                  if (reward.items.length > 0) {
+                    msg += `，並獲得：${reward.items
+                      .map((i) => i.name)
+                      .join("、")}。`;
+                  }
+                } else {
+                  const lostExp = Math.floor(role.exp * 0.01);
+                  role.gainExp(-lostExp);
+                  const state = role.getRoleState();
+                  role.hp = state.maxHp;
+                  role.mp = state.maxMp;
+                  msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+                }
+                safeSendMessage(bot, channelId, { content: msg });
+              },
+              [UserCommand.story]: () => {
+                const key = `${guildId}_${userId}`;
+                let engine = userStories.get(key);
+                if (!engine) {
+                  engine = new StoryEngine(randomStoryFn());
+                  userStories.set(key, engine);
+                }
+                const scene = engine.getCurrentScene();
+                let msg = `【${scene.title}】\n${scene.description}\n`;
+                if (engine.isEnd()) {
+                  msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                } else {
+                  msg +=
+                    "\n可選擇：" +
+                    scene.options
+                      .map((o, i) => `(${i + 1})${o.text}`)
+                      .join("  ");
+                  msg += "\n請用 storypick <編號> 選擇。";
+                }
+                safeSendMessage(bot, channelId, { content: msg });
+              },
+              [UserCommand.storyPick]: () => {
+                const key = `${guildId}_${userId}`;
+                const engine = userStories.get(key);
+                if (!engine) {
+                  safeSendMessage(bot, channelId, {
+                    content: "請先輸入 story 開始故事模式。",
+                  });
+                  return;
+                }
+                const scene = engine.getCurrentScene();
+                if (engine.isEnd()) {
+                  safeSendMessage(bot, channelId, {
+                    content: "故事已結束，請重新輸入 story 以開始新故事。",
+                  });
+                  return;
+                }
+                const idx = parseInt(p[0]);
+                if (isNaN(idx) || idx < 1 || idx > scene.options.length) {
+                  safeSendMessage(bot, channelId, {
+                    content: `請輸入有效的選項編號（1-${scene.options.length}）。`,
+                  });
+                  return;
+                }
+                const option = scene.options[idx - 1];
+                const outcome = engine.chooseOption(option.id);
+                let msg = `你選擇了「${option.text}」\n${outcome || ""}`;
+                const nextScene = engine.getCurrentScene();
+                msg += `\n\n【${nextScene.title}】\n${nextScene.description}`;
+                let rewardMsg = "";
+                if (engine.isEnd()) {
+                  // === 獎勵邏輯 ===
                   // 經驗值獎勵
                   const exp = 100 + Math.floor(Math.random() * 101); // 100~200
                   role.gainExp(exp);
@@ -544,54 +496,58 @@ export async function botLoop() {
                         break;
                     }
                     for (let i = 0; i < weight; i++) weighted.push(item);
+                    if (weighted.length > 0) {
+                      const item =
+                        weighted[Math.floor(Math.random() * weighted.length)];
+                      role.gainItem(item.id);
+                      rewardMsg += `，並獲得道具/裝備：${item.name}（${item.rarity}）`;
+                    }
                   }
-                  if (weighted.length > 0) {
-                    const item =
-                      weighted[Math.floor(Math.random() * weighted.length)];
-                    role.gainItem(item.id);
-                    rewardMsg += `，並獲得道具/裝備：${item.name}（${item.rarity}）`;
-                  }
+                  msg += `\n${rewardMsg}`;
+                  msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                } else {
+                  msg +=
+                    "\n可選擇：" +
+                    nextScene.options
+                      .map((o, i) => `(${i + 1})${o.text}`)
+                      .join("  ");
+                  msg += "\n請用 storypick <編號> 選擇。";
                 }
-                msg += `\n${rewardMsg}`;
-                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
-              } else {
-                msg +=
-                  "\n可選擇：" +
-                  nextScene.options
-                    .map((o, i) => `(${i + 1})${o.text}`)
-                    .join("  ");
-                msg += "\n請用 storypick <編號> 選擇。";
-              }
-              safeSendMessage(bot, channelId, { content: msg });
-            },
-            [UserCommand.storyState]: () => {
-              const key = `${guildId}_${userId}`;
-              const engine = userStories.get(key);
-              if (!engine) {
-                safeSendMessage(bot, channelId, {
-                  content: "請先輸入 story 開始故事模式。",
-                });
-                return;
-              }
-              const scene = engine.getCurrentScene();
-              let msg = `【${scene.title}】\n${scene.description}\n`;
-              if (engine.isEnd()) {
-                msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
-              } else {
-                msg +=
-                  "\n可選擇：" +
-                  scene.options.map((o, i) => `(${i + 1})${o.text}`).join("  ");
-                msg += "\n請用 storypick <編號> 選擇。";
-              }
-              safeSendMessage(bot, channelId, { content: msg });
-            },
-          };
+                safeSendMessage(bot, channelId, { content: msg });
+              },
+              [UserCommand.storyState]: () => {
+                const key = `${guildId}_${userId}`;
+                const engine = userStories.get(key);
+                if (!engine) {
+                  safeSendMessage(bot, channelId, {
+                    content: "請先輸入 story 開始故事模式。",
+                  });
+                  return;
+                }
+                const scene = engine.getCurrentScene();
+                let msg = `【${scene.title}】\n${scene.description}\n`;
+                if (engine.isEnd()) {
+                  msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                } else {
+                  msg +=
+                    "\n可選擇：" +
+                    scene.options
+                      .map((o, i) => `(${i + 1})${o.text}`)
+                      .join("  ");
+                  msg += "\n請用 storypick <編號> 選擇。";
+                }
+                safeSendMessage(bot, channelId, { content: msg });
+              },
+            };
 
-          if (command in commandHandlers) {
-            commandHandlers[command as UserCommand]!();
+            if (command in commandHandlers) {
+              commandHandlers[command]!();
+            } else {
+              const content = Template.unavailableCommand();
+              safeSendMessage(bot, channelId, { content });
+            }
           } else {
-            const content = Template.unavailableCommand();
-            safeSendMessage(bot, channelId, { content });
+            safeSendMessage(bot, channelId, { content: Template.noHasRole() });
           }
         },
         interactionCreate(bot, interaction) {
