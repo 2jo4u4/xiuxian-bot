@@ -47,16 +47,16 @@ export function calculateReward(
 function getDropRate(rarity: string): number {
   switch (rarity) {
     case "common":
-      return 0.8;
+      return 0.4;
     case "uncommon":
-      return 0.5;
+      return 0.25;
     case "rare":
-      return 0.2;
-    case "epic":
-      return 0.05;
-    case "legendary":
-      return 0.01;
-    default:
       return 0.1;
+    case "epic":
+      return 0.075;
+    case "legendary":
+      return 0.015;
+    default:
+      return 0.5;
   }
 }
