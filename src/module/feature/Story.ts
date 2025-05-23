@@ -48,7 +48,10 @@ export class StoryEngine {
   constructor(story: GameStory, initialState?: Partial<GameState>) {
     this.story = story;
     // 初始化狀態
-    const startSceneId = initialState?.currentSceneId ?? Object.keys(story)[0];
+    const startSceneId =
+      initialState?.currentSceneId ??
+      Object.keys(story).find((key) => story[key].isStartingScene) ??
+      Object.keys(story)[0];
 
     this.state = {
       currentSceneId: startSceneId,

@@ -170,6 +170,7 @@ export async function botLoop() {
               content: Template.createRole(tag),
             });
           } else if (role !== undefined) {
+            const key = role.userId.toString();
             // 指令對應處理函式表（補齊所有 UserCommand key，未實作的給預設回應）
             const commandHandlers: Record<UserCommand, () => void> = {
               [UserCommand.幫助]: () => {
@@ -335,7 +336,6 @@ export async function botLoop() {
                 });
               },
               [UserCommand.戰鬥]: () => {
-                const key = `${role.guildId}_${role.userId}`;
                 const monster = playerEncounter.get(key);
                 if (!monster) {
                   safeSendMessage(bot, channelId, {
@@ -373,7 +373,6 @@ export async function botLoop() {
                 safeSendMessage(bot, channelId, { content: msg });
               },
               [UserCommand.逃跑]: () => {
-                const key = `${role.guildId}_${role.userId}`;
                 if (playerEncounter.has(key)) {
                   playerEncounter.delete(key);
                   safeSendMessage(bot, channelId, {
@@ -416,16 +415,13 @@ export async function botLoop() {
                 safeSendMessage(bot, channelId, { content: msg });
               },
               [UserCommand.story]: () => {
-                const key = `${guildId}_${userId}`;
-                let engine = userStories.get(key);
-                if (!engine) {
-                  engine = new StoryEngine(randomStoryFn());
-                  userStories.set(key, engine);
-                }
+                const engine =
+                  userStories.get(key) ?? new StoryEngine(randomStoryFn());
                 const scene = engine.getCurrentScene();
                 let msg = `【${scene.title}】\n${scene.description}\n`;
                 if (engine.isEnd()) {
                   msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                  userStories.delete(key);
                 } else {
                   msg +=
                     "\n可選擇：" +
@@ -433,11 +429,11 @@ export async function botLoop() {
                       .map((o, i) => `(${i + 1})${o.text}`)
                       .join("  ");
                   msg += "\n請用 storypick <編號> 選擇。";
+                  userStories.set(key, engine);
                 }
                 safeSendMessage(bot, channelId, { content: msg });
               },
               [UserCommand.storyPick]: () => {
-                const key = `${guildId}_${userId}`;
                 const engine = userStories.get(key);
                 if (!engine) {
                   safeSendMessage(bot, channelId, {
@@ -450,6 +446,7 @@ export async function botLoop() {
                   safeSendMessage(bot, channelId, {
                     content: "故事已結束，請重新輸入 story 以開始新故事。",
                   });
+                  userStories.delete(key);
                   return;
                 }
                 const idx = parseInt(p[0]);
@@ -505,6 +502,7 @@ export async function botLoop() {
                   }
                   msg += `\n${rewardMsg}`;
                   msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                  userStories.delete(key);
                 } else {
                   msg +=
                     "\n可選擇：" +
@@ -516,7 +514,6 @@ export async function botLoop() {
                 safeSendMessage(bot, channelId, { content: msg });
               },
               [UserCommand.storyState]: () => {
-                const key = `${guildId}_${userId}`;
                 const engine = userStories.get(key);
                 if (!engine) {
                   safeSendMessage(bot, channelId, {
@@ -528,6 +525,7 @@ export async function botLoop() {
                 let msg = `【${scene.title}】\n${scene.description}\n`;
                 if (engine.isEnd()) {
                   msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                  userStories.delete(key);
                 } else {
                   msg +=
                     "\n可選擇：" +
