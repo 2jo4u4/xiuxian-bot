@@ -12,6 +12,7 @@ interface GameScene {
   title: string; // 場景標題
   description: string; // 場景的主要描述文字
   options: GameOption[]; // 該場景提供的選項列表
+  isEnd?: boolean;
 }
 
 // 定義整個遊戲故事的介面 (所有場景的集合)
@@ -89,6 +90,7 @@ export class StoryEngine {
   isEnd(): boolean {
     const scene = this.getCurrentScene();
     return (
+      scene.isEnd ||
       scene.options.length === 0 ||
       scene.options.every((opt) => !opt.nextSceneId)
     );

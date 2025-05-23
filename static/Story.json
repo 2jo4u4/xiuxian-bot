@@ -32,7 +32,6 @@
       {
         "id": "option_heritage_practice",
         "text": "立即開始參悟功法，提升實力。",
-        "nextSceneId": "scene_blackmarket_encounter",
         "outcomeText": "你初步掌握了《九轉玄天訣》的奧義，實力大幅提升。你對未來的修行之路充滿信心。"
       }
     ]
@@ -127,7 +126,6 @@
       {
         "id": "option_auction_end_continue",
         "text": "離開拍賣會，繼續修行。",
-        "nextSceneId": "scene_forest_spirit_beast",
         "outcomeText": "你繼續踏上旅程，尋找新的機緣。"
       }
     ]
@@ -253,9 +251,9 @@
     "options": [
       {
         "id": "option_end_hero_fame",
-        "text": "遊戲結束：你的傳奇之路正在開啟！",
-        "nextSceneId": null,
-        "outcomeText": ""
+        "text": "故事結束：你的傳奇之路正在開啟！",
+        "outcomeText": "",
+        "isEnd": true
       }
     ]
   },
@@ -266,9 +264,9 @@
     "options": [
       {
         "id": "option_end_hero_minor",
-        "text": "遊戲結束：你的修仙旅程持續。",
-        "nextSceneId": null,
-        "outcomeText": ""
+        "text": "故事結束：你的修仙旅程持續。",
+        "outcomeText": "",
+        "isEnd": true
       }
     ]
   },
@@ -279,9 +277,9 @@
     "options": [
       {
         "id": "option_end_neutral",
-        "text": "遊戲結束：你的故事將如何發展？",
-        "nextSceneId": null,
-        "outcomeText": ""
+        "text": "故事結束：你的故事將如何發展？",
+        "outcomeText": "",
+        "isEnd": true
       }
     ]
   }
