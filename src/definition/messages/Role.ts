@@ -30,7 +30,7 @@ export declare namespace $ {
     spiritRoots: number[];
     reputation: number;
     resources: number;
-    backpack: string[];
+    backpack: Map<string, string>;
     equipment: Map<string, string>;
     hp: number;
     mp: number;
@@ -50,7 +50,7 @@ export function getDefaultValue(): $.Role {
     spiritRoots: [],
     reputation: 0,
     resources: 0,
-    backpack: [],
+    backpack: new Map(),
     equipment: new Map(),
     hp: 0,
     mp: 0,
@@ -75,7 +75,7 @@ export function encodeJson(value: $.Role): unknown {
   result.spiritRoots = value.spiritRoots.map(value => tsValueToJsonValueFns.int32(value));
   if (value.reputation !== undefined) result.reputation = tsValueToJsonValueFns.int32(value.reputation);
   if (value.resources !== undefined) result.resources = tsValueToJsonValueFns.int32(value.resources);
-  result.backpack = value.backpack.map(value => tsValueToJsonValueFns.string(value));
+  if (value.backpack !== undefined) result.backpack = Object.fromEntries([...value.backpack.entries()].map(([key, value]) => [key, tsValueToJsonValueFns.string(value)]));
   if (value.equipment !== undefined) result.equipment = Object.fromEntries([...value.equipment.entries()].map(([key, value]) => [key, tsValueToJsonValueFns.string(value)]));
   if (value.hp !== undefined) result.hp = tsValueToJsonValueFns.int32(value.hp);
   if (value.mp !== undefined) result.mp = tsValueToJsonValueFns.int32(value.mp);
@@ -93,7 +93,7 @@ export function decodeJson(value: any): $.Role {
   result.spiritRoots = value.spiritRoots?.map((value: any) => jsonValueToTsValueFns.int32(value)) ?? [];
   if (value.reputation !== undefined) result.reputation = jsonValueToTsValueFns.int32(value.reputation);
   if (value.resources !== undefined) result.resources = jsonValueToTsValueFns.int32(value.resources);
-  result.backpack = value.backpack?.map((value: any) => jsonValueToTsValueFns.string(value)) ?? [];
+  if (value.backpack !== undefined) result.backpack = Object.fromEntries([...value.backpack.entries()].map(([key, value]) => [key, jsonValueToTsValueFns.string(value)]));
   if (value.equipment !== undefined) result.equipment = Object.fromEntries([...value.equipment.entries()].map(([key, value]) => [key, jsonValueToTsValueFns.string(value)]));
   if (value.hp !== undefined) result.hp = jsonValueToTsValueFns.int32(value.hp);
   if (value.mp !== undefined) result.mp = jsonValueToTsValueFns.int32(value.mp);
@@ -155,10 +155,13 @@ export function encodeBinary(value: $.Role): Uint8Array {
       [9, tsValueToWireValueFns.int32(tsValue)],
     );
   }
-  for (const tsValue of value.backpack) {
-    result.push(
-      [10, tsValueToWireValueFns.string(tsValue)],
-    );
+  {
+    const fields = value.backpack.entries();
+    for (const [key, value] of fields) {
+      result.push(
+        [10, { type: WireType.LengthDelimited as const, value: serialize([[1, tsValueToWireValueFns.string(key)], [2, tsValueToWireValueFns.string(value)]]) }],
+      );
+    }
   }
   {
     const fields = value.equipment.entries();
@@ -251,9 +254,9 @@ export function decodeBinary(binary: Uint8Array): $.Role {
   }
   collection: {
     const wireValues = wireMessage.filter(([fieldNumber]) => fieldNumber === 10).map(([, wireValue]) => wireValue);
-    const value = wireValues.map((wireValue) => wireValueToTsValueFns.string(wireValue)).filter(x => x !== undefined);
+    const value = wireValues.map((wireValue) => (() => { if (wireValue.type !== WireType.LengthDelimited) { return; } const { 1: key, 2: value } = Object.fromEntries(deserialize(wireValue.value)); if (key === undefined || value === undefined) return; return [wireValueToTsValueFns.string(key), wireValueToTsValueFns.string(value)] as const;})()).filter(x => x !== undefined);
     if (!value.length) break collection;
-    result.backpack = value as any;
+    result.backpack = new Map(value as any);
   }
   collection: {
     const wireValues = wireMessage.filter(([fieldNumber]) => fieldNumber === 11).map(([, wireValue]) => wireValue);

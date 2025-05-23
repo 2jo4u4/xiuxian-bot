@@ -173,7 +173,7 @@ export const Template = {
    * 顯示背包與裝備欄內容
    */
   showBackpackAndEquipment(
-    backpack: ItemDefinition[],
+    backpack: Array<{ item: ItemDefinition; count: number }>,
     equipment: Record<string, ItemDefinition | null>
   ): string {
     let str = "【背包】\n";
@@ -182,7 +182,10 @@ export const Template = {
     } else {
       str +=
         backpack
-          .map((item) => `- ${item.name}（${item.id}，${item.rarity}）`)
+          .map(
+            ({ item, count }) =>
+              `- ${item.name}（${item.id}，${item.rarity}）x${count}`
+          )
           .join("\n") + "\n";
     }
     str += "\n【裝備欄】\n";

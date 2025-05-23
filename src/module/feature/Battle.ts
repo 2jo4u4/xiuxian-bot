@@ -29,13 +29,17 @@ export function battle(player: GamePlayer, monster: Monster): BattleResult {
     // 玩家攻擊
     const playerDmg = Math.max(playerStats.atk - monster.def, 0);
     monsterHp -= playerDmg;
-    log.push(`你對${monster.name}造成了${playerDmg}點傷害。`);
+    log.push(
+      `你對${monster.name}造成了${playerDmg}點傷害。${monster.name}剩下${monsterHp}血量`
+    );
 
     // 若怪物未死，反擊
     if (monsterHp > 0) {
       const monsterDmg = Math.max(monster.atk - playerStats.def, 0);
       playerHp -= monsterDmg;
-      log.push(`${monster.name}對你造成了${monsterDmg}點傷害。`);
+      log.push(
+        `${monster.name}對你造成了${monsterDmg}點傷害。你剩下${playerHp}血量`
+      );
     }
     // 若有法力消耗規則，可在此處調整 playerMp
     // 例如: playerMp -= 0;
