@@ -41,17 +41,24 @@ export class GameHost {
   }
   injectUsers() {
     const users = database.readUsers();
-    users.role.forEach(({ guildId, userId, equipment, ...state }) => {
+    users.role.forEach(({ guildId, userId, equipment, backpack, ...state }) => {
       const equipmentRecord: Record<string, string | null> = {};
       if (equipment instanceof Map) {
         equipment.forEach((value, key) => {
           equipmentRecord[key] = value;
         });
       }
+      const backpackRecord: Record<string, number> = {};
+      if (backpack instanceof Map) {
+        backpack.forEach((value, key) => {
+          backpackRecord[key] = parseInt(value);
+        });
+      }
       const role = new GamePlayer({
         userId: BigInt(userId),
         guildId: BigInt(guildId),
         equipment: equipmentRecord,
+        backpack: backpackRecord,
         ...state,
       });
       this.addRole(role);

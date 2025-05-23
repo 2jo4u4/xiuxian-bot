@@ -25,7 +25,7 @@ export class GamePlayer {
   spiritRoots: SpiritRootType[]; // 支援複數靈根
   reputation: number; // 名聲
   resources: number; // 靈石數量
-  backpack: string[]; // 背包，存放道具名稱
+  backpack: Record<string, number>; // 背包，存放道具ID與數量
   equipment: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
   // 戰鬥屬性
   hp: number; // 當前血量
@@ -55,7 +55,7 @@ export class GamePlayer {
     spiritRoots?: SpiritRootType[]; // 支援複數靈根
     reputation?: number; // 名聲
     resources?: number; // 靈石數量
-    backpack?: string[]; // 背包，存放道具名稱
+    backpack?: Record<string, number>; // 改為物品ID對數量
     equipment?: Record<string, string | null>; // 裝備欄，key為部位如'weapon','armor'等，value為裝備名稱
     hp?: number;
     mp?: number;
@@ -88,7 +88,7 @@ export class GamePlayer {
     this.spiritRoots = spiritRoots ?? GamePlayer.randomSpiritRoots();
     this.reputation = reputation ?? 0;
     this.resources = resources ?? 0;
-    this.backpack = backpack ?? [];
+    this.backpack = backpack ?? {};
     this.equipment = equipment ?? GamePlayer.defaultEquipment();
     // 初始化當前血量/法力
     const { maxHp, maxMp } = this.getRoleState();
@@ -129,8 +129,12 @@ export class GamePlayer {
     const equipmentMap = new Map<string, string>();
     for (const key in this.equipment) {
       const value = this.equipment[key];
-      // protobuf map 不支援 null，空位用空字串
       equipmentMap.set(key, value ?? "");
+    }
+    // 將 backpack: Record<string, number> 轉為 Map<string, string>（key: itemId, value: 數量字串）
+    const backpackMap = new Map<string, string>();
+    for (const id in this.backpack) {
+      backpackMap.set(id, String(this.backpack[id]));
     }
     return {
       userId: this.userId.toString(),
@@ -141,7 +145,7 @@ export class GamePlayer {
       spiritRoots: this.spiritRoots.map((root) => root as number),
       reputation: this.reputation,
       resources: this.resources,
-      backpack: this.backpack,
+      backpack: backpackMap,
       equipment: equipmentMap,
       hp: this.hp,
       mp: this.mp,
@@ -169,11 +173,15 @@ export class GamePlayer {
     }
   }
 
-  // 取得背包所有物品詳細資料
-  getBackpackItems(): ItemDefinition[] {
-    return this.backpack
-      .map((id) => getItemById(id))
-      .filter(Boolean) as ItemDefinition[];
+  // 取得背包所有物品詳細資料（含數量）
+  getBackpackItems(): Array<{ item: ItemDefinition; count: number }> {
+    return Object.entries(this.backpack)
+      .map(([id, count]) => {
+        const item = getItemById(id);
+        if (!item) return null;
+        return { item, count };
+      })
+      .filter(Boolean) as Array<{ item: ItemDefinition; count: number }>;
   }
 
   // 取得裝備詳細資料（依部位）
@@ -192,14 +200,12 @@ export class GamePlayer {
    * @returns { success: boolean, message: string }
    */
   useItem(itemIdOrName: string): { success: boolean; message: string } {
-    // 支援名稱或ID
     const item = getItemByNameOrId(itemIdOrName);
     if (!item) return { success: false, message: "道具不存在" };
-    const idx = this.backpack.indexOf(item.id);
-    if (idx === -1) return { success: false, message: "背包中沒有此道具" };
+    if (!this.backpack[item.id] || this.backpack[item.id] <= 0)
+      return { success: false, message: "背包中沒有此道具" };
     if (item.type !== "consumable")
       return { success: false, message: "此道具不可直接使用" };
-    // 實際效果可根據 itemId 擴充
     let effectMsg = "";
     switch (item.id) {
       case "elixir_qi":
@@ -213,8 +219,9 @@ export class GamePlayer {
       default:
         effectMsg = `你使用了${item.name}。`;
     }
-    // 移除道具
-    this.backpack.splice(idx, 1);
+    // 扣除數量
+    this.backpack[item.id]--;
+    if (this.backpack[item.id] <= 0) delete this.backpack[item.id];
     return { success: true, message: effectMsg };
   }
 
@@ -224,24 +231,21 @@ export class GamePlayer {
    * @returns { success: boolean, message: string }
    */
   equipItem(itemIdOrName: string): { success: boolean; message: string } {
-    // 支援名稱或ID
     const item = getItemByNameOrId(itemIdOrName);
     if (!item) return { success: false, message: "裝備不存在" };
-    const idx = this.backpack.indexOf(item.id);
-    if (idx === -1) return { success: false, message: "背包中沒有此裝備" };
+    if (!this.backpack[item.id] || this.backpack[item.id] <= 0)
+      return { success: false, message: "背包中沒有此裝備" };
     if (item.type !== "equipment" && item.type !== "artifact")
       return { success: false, message: "此物品不可裝備" };
     if (!item.slot) return { success: false, message: "裝備缺少部位資訊" };
-    // 若該部位已有裝備，先卸下
     if (this.equipment[item.slot]) {
       // 將原裝備放回背包
-      this.backpack.push(this.equipment[item.slot]!);
+      const oldId = this.equipment[item.slot]!;
+      this.backpack[oldId] = (this.backpack[oldId] ?? 0) + 1;
     }
-    // 裝備新物品
     this.equipment[item.slot] = item.id;
-    // 從背包移除
-    this.backpack.splice(idx, 1);
-    // 檢查當前血量/法力是否超過最大值
+    this.backpack[item.id]--;
+    if (this.backpack[item.id] <= 0) delete this.backpack[item.id];
     const { maxHp, maxMp } = this.getRoleState();
     if (this.hp > maxHp) this.hp = maxHp;
     if (this.mp > maxMp) this.mp = maxMp;
@@ -256,10 +260,9 @@ export class GamePlayer {
   unequip(slot: string): { success: boolean; message: string } {
     const itemId = this.equipment[slot];
     if (!itemId) return { success: false, message: "該部位沒有裝備" };
-    this.backpack.push(itemId);
+    this.backpack[itemId] = (this.backpack[itemId] ?? 0) + 1;
     this.equipment[slot] = null;
     const item = getItemById(itemId);
-    // 檢查當前血量/法力是否超過最大值
     const { maxHp, maxMp } = this.getRoleState();
     if (this.hp > maxHp) this.hp = maxHp;
     if (this.mp > maxMp) this.mp = maxMp;
@@ -316,7 +319,7 @@ export class GamePlayer {
     if (!item) return { success: false, message: "裝備不存在" };
     if (item.type !== "equipment" && item.type !== "artifact")
       return { success: false, message: "此物品不是裝備/法寶" };
-    this.backpack.push(item.id);
+    this.backpack[item.id] = (this.backpack[item.id] ?? 0) + 1;
     return { success: true, message: `你獲得了${item.name}。` };
   }
 
@@ -328,7 +331,7 @@ export class GamePlayer {
   gainItem(itemIdOrName: string): { success: boolean; message: string } {
     const item = getItemByNameOrId(itemIdOrName);
     if (!item) return { success: false, message: "道具不存在" };
-    this.backpack.push(item.id);
+    this.backpack[item.id] = (this.backpack[item.id] ?? 0) + 1;
     return { success: true, message: `你獲得了${item.name}。` };
   }
 }
