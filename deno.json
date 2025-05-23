@@ -4,8 +4,8 @@
   },
   "tasks": {
     "protoc": "protoc.sh",
-    "start": "deno run --allow-net --allow-write --allow-read --allow-env --watch ./src/main.ts",
-    "exec": "deno run --allow-net --allow-write --allow-read --allow-env ./src/main.ts",
+    "start": "deno run --allow-net --allow-import --allow-write --allow-read --allow-env --watch ./src/main.ts",
+    "exec": "deno run --allow-net --allow-import --allow-write --allow-read --allow-env ./src/main.ts",
     "test": "deno test --allow-import --no-check src/module/feature/unit_test.ts"
   },
   "imports": {

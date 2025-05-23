@@ -11,4 +11,4 @@ COPY . .
 RUN deno cache --allow-import ./src/main.ts
 # ENTRYPOINT [ "sleep", "infinity"]
 # CMD [ "run","--allow-net","--allow-read","--allow-write","--allow-env","./src/main.ts" ]
-CMD ["task","start"]
+CMD ["task","exec"]
