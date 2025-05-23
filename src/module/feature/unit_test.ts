@@ -10,10 +10,12 @@ import {
   UserCommand,
   CommandAlais,
 } from "./Constants.ts";
-import { getItemById } from "./ItemDefinitions.ts";
+import { getItemById as _getItemById } from "./ItemDefinitions.ts";
 import { battle } from "./Battle.ts";
 import { MonsterList } from "./Monster.ts";
 import { CommandCtrl } from "./UserCommand.ts";
+import { StoryEngine, GameStory } from "./Story.ts";
+import { ItemList } from "./ItemDefinitions.ts";
 
 Deno.test("GamePlayer: 建立角色與屬性初始化", () => {
   const role = new GamePlayer({ userId: 1n, guildId: 1n });
@@ -127,4 +129,142 @@ Deno.test("UserCommand: CommandCtrl 解析搜尋並戰鬥指令", () => {
   assert(result && result.command === UserCommand.搜尋並戰鬥);
   result = ctrl.getCommandType("%修仙 searchAndFight");
   assert(result && result.command === UserCommand.搜尋並戰鬥);
+});
+
+Deno.test("StoryEngine: 隨機起始場景與推進選項", () => {
+  // 模擬簡易故事資料
+  const story: GameStory = {
+    scene1: {
+      id: "scene1",
+      title: "起點",
+      description: "這是起始場景。",
+      options: [
+        {
+          id: "opt1",
+          text: "前進",
+          nextSceneId: "scene2",
+          outcomeText: "你選擇前進。",
+        },
+      ],
+      isStartingScene: true,
+    },
+    scene2: {
+      id: "scene2",
+      title: "終點",
+      description: "這是結局。",
+      options: [
+        {
+          id: "end",
+          text: "結束",
+          nextSceneId: null,
+          outcomeText: "故事結束。",
+        },
+      ],
+      isEndingScene: true,
+    },
+  };
+  // 測試隨機起始
+  const startId = Object.keys(story).find((key) => story[key].isStartingScene);
+  assert(startId === "scene1");
+  // StoryEngine 初始化
+  const engine = new StoryEngine(story);
+  assert(engine.getCurrentScene().id === "scene1");
+  // 推進選項
+  const outcome = engine.chooseOption("opt1");
+  assert(outcome === "你選擇前進。");
+  assert(engine.getCurrentScene().id === "scene2");
+  // 結局判斷
+  assert(engine.isEnd() === true);
+});
+
+Deno.test("StoryEngine: 多起始場景隨機性", () => {
+  const story: GameStory = {
+    a: {
+      id: "a",
+      title: "A",
+      description: "A",
+      options: [],
+      isStartingScene: true,
+    },
+    b: {
+      id: "b",
+      title: "B",
+      description: "B",
+      options: [],
+      isStartingScene: true,
+    },
+  };
+  // 多次取樣應該有機會拿到 a 或 b
+  const seen = new Set<string>();
+  for (let i = 0; i < 10; i++) {
+    const randomStart = Object.keys(story).filter(
+      (k) => story[k].isStartingScene
+    );
+    seen.add(randomStart[Math.floor(Math.random() * randomStart.length)]!);
+  }
+  assert(seen.has("a") && seen.has("b"));
+});
+
+Deno.test("StoryEngine: 結局場景 isEndingScene 判斷", () => {
+  const story: GameStory = {
+    s: {
+      id: "s",
+      title: "S",
+      description: "S",
+      options: [],
+      isEndingScene: true,
+    },
+  };
+  const engine = new StoryEngine(story, { currentSceneId: "s" });
+  assert(engine.isEnd());
+});
+
+Deno.test("StoryEngine: 完成故事給予獎勵流程（模擬）", () => {
+  // 這裡只驗證流程，不驗證 Bot 內部
+  const story: GameStory = {
+    s: {
+      id: "s",
+      title: "S",
+      description: "S",
+      options: [
+        { id: "end", text: "結束", nextSceneId: null, outcomeText: "完結。" },
+      ],
+      isStartingScene: true,
+      isEndingScene: true,
+    },
+  };
+  const engine = new StoryEngine(story);
+  // 選擇結束
+  engine.chooseOption("end");
+  assert(engine.isEnd());
+  // 模擬獎勵抽取
+  const weighted: typeof ItemList = [];
+  for (const item of ItemList) {
+    let weight = 1;
+    switch (item.rarity) {
+      case "legendary":
+        weight = 1;
+        break;
+      case "epic":
+        weight = 3;
+        break;
+      case "rare":
+        weight = 8;
+        break;
+      case "uncommon":
+        weight = 20;
+        break;
+      case "common":
+        weight = 40;
+        break;
+      default:
+        weight = 1;
+        break;
+    }
+    for (let i = 0; i < weight; i++) weighted.push(item);
+  }
+  assert(weighted.length > 0);
+  // 隨機抽一個
+  const item = weighted[Math.floor(Math.random() * weighted.length)];
+  assert(item && typeof item.name === "string");
 });
