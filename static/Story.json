@@ -1,0 +1,288 @@
+{
+  "scene_cave_discovery": {
+    "id": "scene_cave_discovery",
+    "title": "破敗洞府的意外傳承",
+    "description": "你在一處山脈中歷練，偶然發現了一座被古老藤蔓掩蓋的破敗洞府。洞府內靈氣稀薄，看似荒廢，但你總覺得有股莫名的吸引力。",
+    "options": [
+      {
+        "id": "option_cave_enter",
+        "text": "小心翼翼地走進洞府探查。",
+        "nextSceneId": "scene_cave_heritage",
+        "outcomeText": "你觸碰石碑，獲得了上古傳承《九轉玄天訣》！你的修為將突飛猛進。"
+      },
+      {
+        "id": "option_cave_avoid_danger",
+        "text": "覺得洞府可能存在危險，決定繞道而行。",
+        "nextSceneId": "scene_forest_journey_continue",
+        "outcomeText": "你謹慎地選擇離開，錯過了機緣，但也避免了潛在的風險。"
+      },
+      {
+        "id": "option_cave_observe",
+        "text": "在洞府外觀察片刻，尋找是否有其他線索。",
+        "nextSceneId": "scene_forest_journey_continue",
+        "outcomeText": "你仔細探查，但未發現功法傳承，最終選擇離開。雖無所獲，卻也避開未知風險。"
+      }
+    ]
+  },
+  "scene_cave_heritage": {
+    "id": "scene_cave_heritage",
+    "title": "《九轉玄天訣》傳承",
+    "description": "腦中浮現出晦澀難懂的符文，化為一篇名為《九轉玄天訣》的上古功法！你感覺體內靈氣躁動，彷彿有著無限潛力。",
+    "options": [
+      {
+        "id": "option_heritage_practice",
+        "text": "立即開始參悟功法，提升實力。",
+        "nextSceneId": "scene_blackmarket_encounter",
+        "outcomeText": "你初步掌握了《九轉玄天訣》的奧義，實力大幅提升。你對未來的修行之路充滿信心。"
+      }
+    ]
+  },
+  "scene_forest_journey_continue": {
+    "id": "scene_forest_journey_continue",
+    "title": "繼續旅程",
+    "description": "你離開了洞府區域，繼續你的修仙旅程。前方還有許多未知的挑戰與機緣在等待著你。",
+    "options": [
+      {
+        "id": "option_journey_to_blackmarket",
+        "text": "前往最近的城鎮黑市。",
+        "nextSceneId": "scene_blackmarket_encounter",
+        "outcomeText": "你決定前往黑市，或許能在那裡找到所需之物。"
+      },
+      {
+        "id": "option_journey_to_forest",
+        "text": "深入迷霧森林探險。",
+        "nextSceneId": "scene_forest_spirit_beast",
+        "outcomeText": "你決定深入迷霧森林，希望能找到稀有藥材或奇遇。"
+      }
+    ]
+  },
+  "scene_blackmarket_encounter": {
+    "id": "scene_blackmarket_encounter",
+    "title": "黑市裡的仗義出手",
+    "description": "你來到一處龍蛇混雜的地下黑市。正當你瀏覽時，耳邊傳來一聲淒厲的呼救，幾名凶神惡煞的修士正圍堵一名少女，欲強行奪取她身上的寶物。",
+    "options": [
+      {
+        "id": "option_blackmarket_intervene",
+        "text": "立即挺身而出，施展功法解圍。",
+        "nextSceneId": "scene_blackmarket_hero",
+        "outcomeText": "你成功救下少女，贏得了美名，為日後結下善緣。"
+      },
+      {
+        "id": "option_blackmarket_observe",
+        "text": "暗中觀察，判斷形勢，尋找最佳出手時機。",
+        "nextSceneId": "scene_blackmarket_hero",
+        "outcomeText": "你冷靜觀察後，精準出手，成功救下少女，展現了智慧與實力。"
+      },
+      {
+        "id": "option_blackmarket_ignore",
+        "text": "避免麻煩，假裝沒看見，從另一邊離開。",
+        "nextSceneId": "scene_auction_house",
+        "outcomeText": "你避開了麻煩，但也錯失了行俠仗義的機會，心中總有些不安。"
+      }
+    ]
+  },
+  "scene_blackmarket_hero": {
+    "id": "scene_blackmarket_hero",
+    "title": "黑市俠義之舉",
+    "description": "你的俠義之舉在黑市中傳開，使得一些心懷不軌之徒不敢輕易招惹你。少女對你感激不盡，並透露了一些關於黑市的隱秘消息。",
+    "options": [
+      {
+        "id": "option_hero_to_auction",
+        "text": "前往即將舉辦的靈寶拍賣會。",
+        "nextSceneId": "scene_auction_house",
+        "outcomeText": "你決定前往拍賣會尋寶，希望能有所收穫。"
+      }
+    ]
+  },
+  "scene_auction_house": {
+    "id": "scene_auction_house",
+    "title": "靈寶拍賣會上的慧眼識珠",
+    "description": "一場聲勢浩大的靈寶拍賣會在城中舉辦，各方勢力雲集，奇珍異寶層出不窮。你帶著積攢的靈石前來尋寶。",
+    "options": [
+      {
+        "id": "option_auction_focus_bright",
+        "text": "專注於拍賣會中那些光芒璀璨、靈氣逼人的珍寶。",
+        "nextSceneId": "scene_auction_result_common",
+        "outcomeText": "你拍下了一枚上品靈丹，雖然價格昂貴，但對修為有益。"
+      },
+      {
+        "id": "option_auction_scan_subtle",
+        "text": "用靈識仔細掃描每一件拍品，特別關注那些看似不起眼的物品。",
+        "nextSceneId": "scene_auction_result_masterpiece",
+        "outcomeText": "你慧眼識珠，以極低價格拍下了銹蝕古鼎，其內竟蘊藏著上古仙器！"
+      },
+      {
+        "id": "option_auction_follow_crowd",
+        "text": "跟隨人群的熱情，競價那些廣受追捧的熱門商品。",
+        "nextSceneId": "scene_auction_result_common",
+        "outcomeText": "你拍下了一柄中品靈劍，品質不錯，但並無特別之處。"
+      }
+    ]
+  },
+  "scene_auction_result_common": {
+    "id": "scene_auction_result_common",
+    "title": "拍賣會收穫",
+    "description": "你獲得了在拍賣會上競價的物品，修為或戰力有所提升，但並無超乎想像的機緣。",
+    "options": [
+      {
+        "id": "option_auction_end_continue",
+        "text": "離開拍賣會，繼續修行。",
+        "nextSceneId": "scene_forest_spirit_beast",
+        "outcomeText": "你繼續踏上旅程，尋找新的機緣。"
+      }
+    ]
+  },
+  "scene_auction_result_masterpiece": {
+    "id": "scene_auction_result_masterpiece",
+    "title": "仙器現世！",
+    "description": "你手中的銹蝕古鼎赫然是一件蒙塵的上古仙器！其內蘊藏著驚人的威能與玄機，等待著你的進一步挖掘。",
+    "options": [
+      {
+        "id": "option_masterpiece_refine",
+        "text": "開始煉化仙器，領悟其玄機。",
+        "nextSceneId": "scene_forest_spirit_beast",
+        "outcomeText": "你成功初步煉化仙器，實力大幅提升，並對其潛力充滿期待。"
+      }
+    ]
+  },
+  "scene_forest_spirit_beast": {
+    "id": "scene_forest_spirit_beast",
+    "title": "迷霧森林的靈獸相遇",
+    "description": "你為尋找一種稀有藥材，深入了傳聞中充滿兇險的迷霧森林。正當你警惕前行時，意外發現一隻受了重傷的幼年獨角靈鹿，它正痛苦地掙扎著。",
+    "options": [
+      {
+        "id": "option_spirit_beast_save",
+        "text": "出手相救，為靈鹿療傷。",
+        "nextSceneId": "scene_spirit_beast_companion",
+        "outcomeText": "你成功救活靈鹿，它親暱地跟隨在你身邊，成為你的忠實夥伴。"
+      },
+      {
+        "id": "option_spirit_beast_observe",
+        "text": "謹慎觀察，不輕易介入。",
+        "nextSceneId": "scene_sect_trial",
+        "outcomeText": "你觀察後選擇離開，避免了風險，但也錯過了結緣的機會。"
+      },
+      {
+        "id": "option_spirit_beast_ignore",
+        "text": "認為是弱肉強食，不予理會。",
+        "nextSceneId": "scene_sect_trial",
+        "outcomeText": "你冷漠離開，道心未受影響，但失去了與靈獸結緣的可能。"
+      }
+    ]
+  },
+  "scene_spirit_beast_companion": {
+    "id": "scene_spirit_beast_companion",
+    "title": "靈鹿夥伴",
+    "description": "靈鹿成為你的忠實夥伴。它靈敏的嗅覺與對危險的預警能力，讓你在森林中屢次化險為夷，甚至找到了一些隱藏的靈藥。",
+    "options": [
+      {
+        "id": "option_companion_to_trial",
+        "text": "繼續前往古老宗門的秘境試煉。",
+        "nextSceneId": "scene_sect_trial",
+        "outcomeText": "你帶著靈鹿夥伴，踏上了宗門試煉之路。"
+      }
+    ]
+  },
+  "scene_sect_trial": {
+    "id": "scene_sect_trial",
+    "title": "古老宗門的秘境試煉",
+    "description": "為提升實力，你參加了一個古老宗門舉辦的秘境試煉。這秘境每百年開啟一次，考驗的是修為、心性與智慧。",
+    "options": [
+      {
+        "id": "option_trial_challenge_all",
+        "text": "勇往直前，積極挑戰秘境中的所有考驗。",
+        "nextSceneId": "scene_trial_space_crystal",
+        "outcomeText": "你屢克強敵，發現上古傳送陣，並獲得了空間晶石。"
+      },
+      {
+        "id": "option_trial_steady_approach",
+        "text": "以穩健為主，避開高風險區域，尋求穩妥的提升。",
+        "nextSceneId": "scene_town_trouble",
+        "outcomeText": "你安全完成試煉，修為穩步提升，但無驚豔發現。"
+      },
+      {
+        "id": "option_trial_find_shortcut",
+        "text": "找尋捷徑，看能否直接抵達秘境核心。",
+        "nextSceneId": "scene_town_trouble",
+        "outcomeText": "你誤觸禁制，未能找到捷徑，錯過了大部分機緣。"
+      }
+    ]
+  },
+  "scene_trial_space_crystal": {
+    "id": "scene_trial_space_crystal",
+    "title": "空間晶石之秘",
+    "description": "你透過感悟上古傳送陣上殘留的空間法則，對空間之道的理解更上一層樓，並意外獲得一枚蘊含磅礴靈氣的空間晶石！",
+    "options": [
+      {
+        "id": "option_crystal_to_town",
+        "text": "離開秘境，前往邊陲小鎮。",
+        "nextSceneId": "scene_town_trouble",
+        "outcomeText": "你帶著對空間之道的感悟和空間晶石，繼續你的修仙旅程。"
+      }
+    ]
+  },
+  "scene_town_trouble": {
+    "id": "scene_town_trouble",
+    "title": "邊陲小鎮的惡勢力剿滅",
+    "description": "一次雲遊途中，你路過一個偏遠的邊陲小鎮。小鎮民不聊生，你很快得知這裡盤踞著一股為禍鄉里的邪修勢力。",
+    "options": [
+      {
+        "id": "option_town_eradicate_evil",
+        "text": "暗中調查邪修據點，然後果斷出手剷除。",
+        "nextSceneId": "scene_town_hero_fame",
+        "outcomeText": "你徹底剷除了邪修勢力，為自己贏得了巨大的聲望。"
+      },
+      {
+        "id": "option_town_assess_then_act",
+        "text": "先觀察邪修的實力，再決定是否介入。",
+        "nextSceneId": "scene_town_hero_minor",
+        "outcomeText": "你驅逐了邪修，小鎮恢復平靜，但也未完全根除其威脅。"
+      },
+      {
+        "id": "option_town_ignore",
+        "text": "事不關己，避免捲入凡人之間的紛爭。",
+        "nextSceneId": "scene_game_end_neutral",
+        "outcomeText": "你選擇離開，避免了麻煩，但也錯失了積累功德的機會。"
+      }
+    ]
+  },
+  "scene_town_hero_fame": {
+    "id": "scene_town_hero_fame",
+    "title": "俠義之名遠揚",
+    "description": "小鎮居民對你感恩戴德，你的俠義之舉聲名遠播，甚至引來了一些隱世宗門的關注。",
+    "options": [
+      {
+        "id": "option_end_hero_fame",
+        "text": "遊戲結束：你的傳奇之路正在開啟！",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ]
+  },
+  "scene_town_hero_minor": {
+    "id": "scene_town_hero_minor",
+    "title": "小鎮的平靜",
+    "description": "你驅逐了邪修，小鎮得以恢復平靜。你的行為贏得了居民的感謝，但並未像徹底剷除那樣帶來巨大的聲譽。",
+    "options": [
+      {
+        "id": "option_end_hero_minor",
+        "text": "遊戲結束：你的修仙旅程持續。",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ]
+  },
+  "scene_game_end_neutral": {
+    "id": "scene_game_end_neutral",
+    "title": "旅程的延續",
+    "description": "你繼續你的修仙旅程，前方的道路充滿未知。你的選擇影響著你的未來。",
+    "options": [
+      {
+        "id": "option_end_neutral",
+        "text": "遊戲結束：你的故事將如何發展？",
+        "nextSceneId": null,
+        "outcomeText": ""
+      }
+    ]
+  }
+}
