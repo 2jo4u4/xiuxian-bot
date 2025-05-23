@@ -195,10 +195,7 @@ export async function botLoop() {
                   const components: ButtonComponent[] = [];
                   const disabled = quest.type === "dice";
                   if (disabled) {
-                    const customId = createBtnCustomId(
-                      role.userId.toString(),
-                      DiceKey
-                    );
+                    const customId = createBtnCustomId(key, DiceKey);
                     components.push({
                       type: MessageComponentTypes.Button,
                       label: "投骰子",
@@ -207,10 +204,7 @@ export async function botLoop() {
                     });
                   }
                   quest.options.forEach(({ desc, ansId }) => {
-                    const customId = createBtnCustomId(
-                      role.userId.toString(),
-                      ansId
-                    );
+                    const customId = createBtnCustomId(key, ansId);
                     components.push({
                       type: MessageComponentTypes.Button,
                       label: desc,
@@ -329,11 +323,20 @@ export async function botLoop() {
                 }
               },
               [UserCommand.搜尋敵人]: () => {
-                const monster = getRandomMonsterByPlayerLevel(role.level.text);
-                playerEncounter.set(`${role.guildId}_${role.userId}`, monster);
-                safeSendMessage(bot, channelId, {
-                  content: `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`,
-                });
+                let content = "";
+                if (role.duringTraining) {
+                  content = Template.duringTraining(role);
+                } else {
+                  const monster = getRandomMonsterByPlayerLevel(
+                    role.level.text
+                  );
+                  playerEncounter.set(
+                    `${role.guildId}_${role.userId}`,
+                    monster
+                  );
+                  content = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n輸入「%修仙 戰鬥」挑戰或「%修仙 逃跑」離開。`;
+                }
+                safeSendMessage(bot, channelId, { content });
               },
               [UserCommand.戰鬥]: () => {
                 const monster = playerEncounter.get(key);
@@ -385,53 +388,68 @@ export async function botLoop() {
                 }
               },
               [UserCommand.搜尋並戰鬥]: () => {
-                // 搜尋敵人
-                const monster = getRandomMonsterByPlayerLevel(role.level.text);
-                // 立即戰鬥
-                const result = battle(role, monster);
-                let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
-                msg += `你與「${monster.name}」展開戰鬥！\n`;
-                msg += result.log ? result.log.join("\n") + "\n" : "";
-                if (result.isWin) {
-                  role.hp = result.playerHp;
-                  role.mp = result.playerMp;
-                  const reward = calculateReward(role, monster);
-                  role.gainExp(reward.exp);
-                  reward.items.forEach((item) => role.gainItem(item.id));
-                  msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
-                  if (reward.items.length > 0) {
-                    msg += `，並獲得：${reward.items
-                      .map((i) => i.name)
-                      .join("、")}。`;
-                  }
+                let content = "";
+                if (role.duringTraining) {
+                  content = Template.duringTraining(role);
                 } else {
-                  const lostExp = Math.floor(role.exp * 0.01);
-                  role.gainExp(-lostExp);
-                  const state = role.getRoleState();
-                  role.hp = state.maxHp;
-                  role.mp = state.maxMp;
-                  msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+                  // 搜尋敵人
+                  const monster = getRandomMonsterByPlayerLevel(
+                    role.level.text
+                  );
+                  // 立即戰鬥
+                  const result = battle(role, monster);
+                  let msg = `你在附近發現了一隻「${monster.name}」（${monster.level}）！\n`;
+                  msg += `你與「${monster.name}」展開戰鬥！\n`;
+                  msg += result.log ? result.log.join("\n") + "\n" : "";
+                  if (result.isWin) {
+                    role.hp = result.playerHp;
+                    role.mp = result.playerMp;
+                    const reward = calculateReward(role, monster);
+                    role.gainExp(reward.exp);
+                    reward.items.forEach((item) => role.gainItem(item.id));
+                    msg += `你擊敗了敵人，獲得經驗值 ${reward.exp}`;
+                    if (reward.items.length > 0) {
+                      msg += `，並獲得：${reward.items
+                        .map((i) => i.name)
+                        .join("、")}。`;
+                    }
+                  } else {
+                    const lostExp = Math.floor(role.exp * 0.01);
+                    role.gainExp(-lostExp);
+                    const state = role.getRoleState();
+                    role.hp = state.maxHp;
+                    role.mp = state.maxMp;
+                    msg += `你戰敗了，損失經驗值 ${lostExp}，血量與法力已恢復。請再接再厲！`;
+                  }
+                  content = msg;
                 }
-                safeSendMessage(bot, channelId, { content: msg });
+                safeSendMessage(bot, channelId, { content });
               },
               [UserCommand.story]: () => {
-                const engine =
-                  userStories.get(key) ?? new StoryEngine(randomStoryFn());
-                const scene = engine.getCurrentScene();
-                let msg = `【${scene.title}】\n${scene.description}\n`;
-                if (engine.isEnd()) {
-                  msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
-                  userStories.delete(key);
+                let content = "";
+                if (role.duringTraining) {
+                  content = Template.duringTraining(role);
                 } else {
-                  msg +=
-                    "\n可選擇：" +
-                    scene.options
-                      .map((o, i) => `(${i + 1})${o.text}`)
-                      .join("  ");
-                  msg += "\n請用 storypick <編號> 選擇。";
-                  userStories.set(key, engine);
+                  const engine =
+                    userStories.get(key) ?? new StoryEngine(randomStoryFn());
+                  const scene = engine.getCurrentScene();
+                  let msg = `【${scene.title}】\n${scene.description}\n`;
+                  if (engine.isEnd()) {
+                    msg += "\n【故事已結束】請重新輸入 story 以開始新故事。";
+                    userStories.delete(key);
+                  } else {
+                    msg +=
+                      "\n可選擇：" +
+                      scene.options
+                        .map((o, i) => `(${i + 1})${o.text}`)
+                        .join("  ");
+                    msg += "\n請用 storypick <編號> 選擇。";
+                    userStories.set(key, engine);
+                  }
+
+                  content = msg;
                 }
-                safeSendMessage(bot, channelId, { content: msg });
+                safeSendMessage(bot, channelId, { content });
               },
               [UserCommand.storyPick]: () => {
                 const engine = userStories.get(key);
@@ -539,7 +557,7 @@ export async function botLoop() {
             };
 
             if (command in commandHandlers) {
-              commandHandlers[command]!();
+              commandHandlers[command]();
             } else {
               const content = Template.unavailableCommand();
               safeSendMessage(bot, channelId, { content });
@@ -590,7 +608,7 @@ export async function botLoop() {
                   ),
                 });
                 role.gainExp(role.executeQuest.anser.score);
-
+                role.executeQuest = null;
                 return;
               }
             }

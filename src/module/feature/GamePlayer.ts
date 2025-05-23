@@ -122,7 +122,6 @@ export class GamePlayer {
 
   gainExp(exp: number) {
     this.exp += exp;
-    this.executeQuest = null;
   }
 
   toRole(): Omit<Role, "id"> {
